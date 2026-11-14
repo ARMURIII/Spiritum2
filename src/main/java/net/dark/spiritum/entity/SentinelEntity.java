@@ -96,8 +96,14 @@ public class SentinelEntity extends PathAwareEntity {
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
         if (player.isSneaking() && !player.isSpectator() && !isRemoved()) {
             if (!getEntityWorld().isClient()) {
-                player.getInventory().offerOrDrop(new ItemStack(ModContent.SENTINEL));
-                discard();
+                if (Vigilance.permits(this, null, player.getUuid())) {
+                    player.getInventory().offerOrDrop(new ItemStack(ModContent.SENTINEL));
+                    discard();
+                } else if (Vigilance.active(this.getEntityWorld(), this.getBlockPos()) == null) {
+                    player.getInventory().offerOrDrop(new ItemStack(ModContent.SENTINEL));
+                    discard();
+
+                }
             }
             return ActionResult.SUCCESS;
         }

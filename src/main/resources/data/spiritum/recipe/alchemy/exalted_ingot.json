@@ -2,11 +2,11 @@
   "type": "spiritum:alchemy",
   "ingredients": [
     {
-      "item": "waywardalchemist:philosopher_ash",
+      "item": "waywardalchemist:philosophers_ash",
       "count": 2
     },
     {
-      "item": "spirtum:argent_ingot",
+      "item": "spiritum:argent_ingot",
       "count": 2
     }
   ],

@@ -172,7 +172,7 @@ public class PedestalBlockEntity extends OfferingBlockEntity {
         pedestal.elapsed++;
         if (pedestal.elapsed % 5 == 0) RitualEffects.sigil(server, pos, recipe, pedestal.elapsed);
         if (pedestal.sustained) {
-            if (pedestal.elapsed >= 12000) {
+            if (pedestal.elapsed >= Integer.MAX_VALUE-1) {
                 for (BlockPos candlePos : List.copyOf(pedestal.candles))
                     if (world.getBlockEntity(candlePos) instanceof CandleBlockEntity candle) candle.snuff();
                 pedestal.stop();

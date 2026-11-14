@@ -31,10 +31,6 @@ public final class SpiritumJeiPlugin implements IModPlugin {
                 "exalted_ingot");
         hideUpgradeRecipe(
                 available.getRecipeManager(),
-                mezz.jei.api.constants.RecipeTypes.CRAFTING,
-                "retrosonus_upgrade_smithing_template");
-        hideUpgradeRecipe(
-                available.getRecipeManager(),
                 mezz.jei.api.constants.RecipeTypes.SMITHING,
                 "retrosonus");
     }

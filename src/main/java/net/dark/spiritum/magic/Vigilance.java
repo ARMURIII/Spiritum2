@@ -22,7 +22,7 @@ public final class Vigilance {
         if (rites != null) rites.remove(pos);
     }
 
-    private static PedestalBlockEntity active(World world, BlockPos pos) {
+    public static PedestalBlockEntity active(World world, BlockPos pos) {
         return world.isChunkLoaded(pos)
                         && world.getBlockEntity(pos) instanceof PedestalBlockEntity pedestal
                         && pedestal.getActiveRitual().equals("vigilance")

@@ -269,8 +269,39 @@ public final class ModContent {
                 FabricItemGroup.builder()
                         .displayName(Text.translatable("itemGroup.spiritum"))
                         .icon(() -> new ItemStack(SPIRIT_GEM))
-                        .entries((context, entries) ->
-                            entries.add(HEXSTONE)
+                        .entries((context, entries) -> {
+                            entries.add(HEXSTONE);
+                            entries.add(HEXSTONE_STAIRS);
+                            entries.add(HEXSTONE_SLAB);
+                            entries.add(HEXSTONE_WALL);
+                            entries.add(POLISHED_HEXSTONE);
+                            entries.add(POLISHED_HEXSTONE_STAIRS);
+                            entries.add(POLISHED_HEXSTONE_SLAB);
+                            entries.add(POLISHED_HEXSTONE_WALL);
+                            entries.add(HEXSTONE_BRICKS);
+                            entries.add(HEXSTONE_BRICK_STAIRS);
+                            entries.add(HEXSTONE_BRICK_SLAB);
+                            entries.add(HEXSTONE_BRICK_WALL);
+                            entries.add(HEXED_CANDLE);
+                            entries.add(RITUAL_PEDESTAL);
+                            entries.add(SPIRIT_FRAGMENT);
+                            entries.add(SPIRIT_GEM);
+                            entries.add(HEX_ASH);
+                            entries.add(ARGENT_INGOT);
+                            entries.add(ARGENT_NUGGET);
+                            entries.add(ALCHEMY_VAT);
+                            entries.add(HEXBLADE);
+                            entries.add(SENTINEL);
+                            entries.add(ARGENT_NEEDLE);
+                            entries.add(LIVING_FLESH);
+                            entries.add(VOODOO_POPPET);
+                            entries.add(CALX_OF_HADES);
+                            entries.add(BOTTLE_OF_HADES);
+                            entries.add(TUNED_BLADE);
+                            entries.add(WARDING_RING);
+                            entries.add(SOULBIND_RING);
+                            entries.add(SUMMONERS_RING);
+                            }
                         )
                         .build());
     }

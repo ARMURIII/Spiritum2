@@ -48,7 +48,7 @@ public final class Resonance {
     private static List<SingingRodEntity> nearby(World world, Box area) {
         Set<Integer> ids = LOADED_RODS.get(world);
         if (ids == null || ids.isEmpty()) return List.of();
-        Box bounds = area.expand(192);
+        Box bounds = area.expand(200);
         List<SingingRodEntity> result = new ArrayList<>();
         ids.removeIf(
                 id -> {
@@ -80,7 +80,7 @@ public final class Resonance {
                         .stream()
                         .filter(
                                 box ->
-                                        hit.x - block.getX() >= box.minX - .00001
+                                        hit.x - block.getX() >= box.minX - .00002
                                                 && hit.x - block.getX() <= box.maxX + .00001
                                                 && hit.z - block.getZ() >= box.minZ - .00001
                                                 && hit.z - block.getZ() <= box.maxZ + .00001)
@@ -145,7 +145,7 @@ public final class Resonance {
                                         r ->
                                                 r.getEntityWorld() != world
                                                         || r.squaredDistanceTo(position) > 96 * 96
-                                                        || Math.abs(r.getY() - position.y) > 12))) {
+                                                        || Math.abs(r.getY() - position.y) > 4))) {
             player.sendMessage(Text.translatable("message.spiritum.resonance_shape"), true);
             return ActionResult.FAIL;
         }
@@ -176,7 +176,7 @@ public final class Resonance {
                 new RodOwnership.Group(
                         id, completed.size(), completed.size() == 4 ? now + 600 : now + 100));
         if (completed.size() == 4) completed.forEach(SingingRodEntity::seal);
-        player.getItemCooldownManager().set(context.getStack(), completed.size() == 4 ? 600 : 100);
+        player.getItemCooldownManager().set(context.getStack(), completed.size() == 4 ? 200 : 30);
         context.getStack()
                 .damage(
                         1,

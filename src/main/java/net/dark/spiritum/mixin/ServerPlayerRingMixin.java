@@ -14,14 +14,6 @@ public abstract class ServerPlayerRingMixin {
     @Inject(method = "copyFrom", at = @At("TAIL"))
     private void spiritum$copy(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        boolean keep =
-                alive
-                        || player.getEntityWorld().getGameRules().getValue(GameRules.KEEP_INVENTORY)
-                        || oldPlayer.isSpectator();
-        ((RingBearer) player)
-                .spiritum$setRing(
-                        keep
-                                ? ((RingBearer) oldPlayer).spiritum$getRing().copy()
-                                : ItemStack.EMPTY);
+        ((RingBearer) player).spiritum$setRing(((RingBearer) oldPlayer).spiritum$getRing().copy());
     }
 }

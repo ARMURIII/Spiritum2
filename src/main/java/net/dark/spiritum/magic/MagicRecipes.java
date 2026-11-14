@@ -83,8 +83,6 @@ public final class MagicRecipes {
                             true,
                             ModContent.HEX_ASH,
                             6,
-                            Items.ECHO_SHARD,
-                            2,
                             ModContent.CALX_OF_HADES,
                             2));
 

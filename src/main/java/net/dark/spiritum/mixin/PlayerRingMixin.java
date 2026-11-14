@@ -35,11 +35,11 @@ public abstract class PlayerRingMixin implements RingBearer {
         spiritum$ring = RingMagic.isRing(saved) ? saved.copyWithCount(1) : ItemStack.EMPTY;
     }
 
-    @Inject(method = "dropInventory", at = @At("TAIL"))
+    /*@Inject(method = "dropInventory", at = @At("TAIL"))
     private void spiritum$drop(ServerWorld world, CallbackInfo ci) {
         if (!world.getGameRules().getValue(GameRules.KEEP_INVENTORY)) {
             ((PlayerEntity) (Object) this).dropItem(spiritum$getRing(), true, false);
             spiritum$ring = ItemStack.EMPTY;
         }
-    }
+    }*/
 }

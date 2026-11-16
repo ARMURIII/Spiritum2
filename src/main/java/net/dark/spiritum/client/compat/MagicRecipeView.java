@@ -5,6 +5,9 @@ import net.dark.spiritum.registry.ModContent;
 import net.dark.spiritum.recipe.AlchemyRecipe;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
 import net.minecraft.text.Text;
 
@@ -14,28 +17,41 @@ public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
     public List<ItemStack> inputs() {
         List<ItemStack> inputs = new ArrayList<>();
         recipe.ingredients().forEach((item, count) -> inputs.add(new ItemStack(item, count)));
-        if (alchemy) inputs.add(new ItemStack(Items.WATER_BUCKET));
-        else {
-            inputs.add(new ItemStack(ModContent.HEXED_CANDLE, recipe.candles()));
-            int ordinary =
-                    RitualCandles.requiresOwner(recipe) ? recipe.candles() - 1 : recipe.candles();
-            inputs.add(new ItemStack(recipe.id().equals("dominion") ? ModContent.SPIRIT_GEM : ModContent.SPIRIT_FRAGMENT, ordinary));
-            if (RitualCandles.requiresOwner(recipe)) {
-                ItemStack bound = new ItemStack(ModContent.SPIRIT_GEM);
-                bound.set(
-                        DataComponentTypes.CUSTOM_NAME,
-                        Text.translatable("viewer.spiritum.bound_gem"));
-                inputs.add(bound);
+        return inputs;
+    }
+
+    public Fluid fluid() {
+        return alchemy ? recipe.fluid() : Fluids.EMPTY;
+    }
+
+    public List<ItemStack> spirits() {
+        List<ItemStack> inputs = new ArrayList<>();
+        int count = recipe.ownerCandles().maxInclusive();
+
+        for (int i = 0; i < recipe.candles()-(RitualCandles.requiresOwner(recipe)?1:0); i++)
+            inputs.add(new ItemStack(ModContent.SPIRIT_FRAGMENT));
+
+        if (count>0) {
+            for (int i = 0; i < count; i++) {
+                ItemStack gem = new ItemStack(ModContent.SPIRIT_GEM);
+                NbtComponent.set(
+                    DataComponentTypes.CUSTOM_DATA,
+                    gem,
+                    nbt -> {
+                        nbt.putString("SpiritumPlayer", UUID.randomUUID().toString());
+                        nbt.putString("SpiritumPlayerName", "Desired Player");
+                    });
+                gem.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+                inputs.add(gem);
             }
         }
+
         return inputs;
     }
 
     public ItemStack output() {
-        if (alchemy) return recipe.outputStack();
-        return recipe.id().equals("argentic_transmutation")
-                ? new ItemStack(ModContent.ARGENT_NUGGET)
-                : ItemStack.EMPTY;
+        return recipe.outputStack();
     }
 
     public Text title() {
@@ -46,16 +62,13 @@ public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
         if (alchemy)
             return List.of(
                     Text.translatable("viewer.spiritum.boiling_water"),
-                    Text.translatable("viewer.spiritum.thirty_seconds"));
+                    Text.translatable("viewer.spiritum.vat_instant"));
+
         List<Text> notes = new ArrayList<>();
-        if (RitualCandles.requiresOwner(recipe))
-            notes.add(Text.translatable("viewer.spiritum.bound_candles", recipe.candles() - 1));
-        else if (recipe.id().equals("withering"))
-            notes.add(Text.translatable("viewer.spiritum.optional_candles"));
-        else if (recipe.id().equals("vigilance"))
-            notes.add(Text.translatable("viewer.spiritum.vigilance_candles"));
-        else if (recipe.id().equals("dominion"))
-            notes.add(Text.translatable("viewer.spiritum.dominion_candles"));
+        if (RitualCandles.requiresOwner(recipe) || (recipe.ownerCandles().minInclusive() == recipe.ownerCandles().maxInclusive() && recipe.ownerCandles().minInclusive() != 0))
+            notes.add(Text.translatable("viewer.spiritum.bound_candles", recipe.candles()-recipe.ownerCandles().minInclusive(),recipe.ownerCandles().minInclusive()));
+        else if (recipe.ownerCandles().maxInclusive()>0)
+            notes.add(Text.translatable("viewer.spiritum.optional_candles", recipe.candles()-recipe.ownerCandles().minInclusive(),recipe.ownerCandles().minInclusive(),recipe.ownerCandles().maxInclusive()));
         else notes.add(Text.translatable("viewer.spiritum.candles", recipe.candles()));
         notes.add(
                 Text.translatable(

@@ -4,13 +4,30 @@ import static net.dark.spiritum.magic.OfferingRecipe.ingredients;
 
 import net.dark.spiritum.registry.ModContent;
 import net.minecraft.item.*;
+import net.minecraft.util.dynamic.Range;
 
 import java.util.List;
 
+@SuppressWarnings("SameParameterValue")
 public final class MagicRecipes {
-    private static OfferingRecipe rite(
-            String id, int candles, boolean persistent, Object... items) {
-        return new OfferingRecipe(id, candles, persistent, ingredients(items), ItemStack.EMPTY);
+    private static OfferingRecipe rite(String id,
+            int candles, boolean persistent, Object... items) {
+        return new OfferingRecipe(id, candles, new Range<>(0), persistent, ingredients(items), ItemStack.EMPTY,null);
+    }
+
+    private static OfferingRecipe rite(String id,
+            int candles, int minGemCount, int maxGemCount, boolean persistent, Object... items) {
+        return new OfferingRecipe(id, candles, new Range<>(minGemCount,maxGemCount), persistent, ingredients(items), ItemStack.EMPTY,null);
+    }
+
+    private static OfferingRecipe rite(String id,
+            int candles, int gemCount, boolean persistent, Object... items) {
+        return new OfferingRecipe(id, candles, new Range<>(gemCount), persistent, ingredients(items), ItemStack.EMPTY,null);
+    }
+
+    private static OfferingRecipe rite(String id,
+            ItemStack result, int candles, boolean persistent, Object... items) {
+        return new OfferingRecipe(id, candles, new Range<>(0), persistent, ingredients(items), result,null);
     }
 
     public static final List<OfferingRecipe> RITUALS =
@@ -44,10 +61,10 @@ public final class MagicRecipes {
                             1,
                             Items.GLOWSTONE_DUST,
                             1),
-                    rite("argentic_transmutation", 3, false, Items.IRON_INGOT, 1),
+                    rite("argentic_transmutation", ModContent.ARGENT_NUGGET.getDefaultStack(), 3, false, Items.IRON_INGOT, 1),
                     rite(
                             "leech_binding",
-                            4,
+                            4,1,
                             false,
                             ModContent.ARGENT_NUGGET,
                             1,
@@ -57,7 +74,7 @@ public final class MagicRecipes {
                             2),
                     rite(
                             "imp_binding",
-                            4,
+                            4,1,
                             false,
                             ModContent.LIVING_FLESH,
                             1,
@@ -67,7 +84,7 @@ public final class MagicRecipes {
                             2),
                     rite(
                             "lemure_binding",
-                            4,
+                            4,1,
                             false,
                             ModContent.SPIRIT_FRAGMENT,
                             1,
@@ -75,11 +92,11 @@ public final class MagicRecipes {
                             2,
                             ModContent.HEX_ASH,
                             2),
-                    rite("calling", 3, false, Items.ENDER_PEARL, 2, ModContent.HEX_ASH, 2),
-                    rite("withering", 2, true, Items.WITHER_ROSE, 2, Items.SOUL_SAND, 4),
+                    rite("calling", 3, 1, false, Items.ENDER_PEARL, 2, ModContent.HEX_ASH, 2),
+                    rite("withering", 2, 0, 4, true, Items.WITHER_ROSE, 2, Items.SOUL_SAND, 4),
                     rite(
                             "vigilance",
-                            4,
+                            4,0,4,
                             true,
                             ModContent.HEX_ASH,
                             6,

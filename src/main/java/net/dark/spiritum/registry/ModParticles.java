@@ -41,8 +41,7 @@ public final class ModParticles {
                     case "leech_binding",
                             "imp_binding",
                             "lemure_binding",
-                            "argentic_transmutation" ->
-                            "binding";
+                            "argentic_transmutation" -> "binding";
                     default -> ritual;
                 };
         return SIGILS.get(family);

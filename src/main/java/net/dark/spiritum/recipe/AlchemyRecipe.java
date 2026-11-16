@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dark.spiritum.magic.OfferingRecipe;
 import net.dark.spiritum.registry.ModContent;
 import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.*;
@@ -13,12 +15,13 @@ import net.minecraft.recipe.*;
 import net.minecraft.recipe.book.*;
 import net.minecraft.recipe.input.RecipeInput;
 import net.minecraft.registry.*;
+import net.minecraft.util.dynamic.Range;
 import net.minecraft.world.World;
 
 import java.util.*;
 
 /** A datapack recipe for the vat; counts can span multiple dropped stacks. */
-public record AlchemyRecipe(List<Input> inputs, ItemStack result, List<ItemStack> byproducts)
+public record AlchemyRecipe(List<Input> inputs, ItemStack result, Fluid fluid, List<ItemStack> byproducts)
         implements Recipe<RecipeInput> {
     public record Input(Item item, int count) {
         public static final Codec<Input> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -30,8 +33,9 @@ public record AlchemyRecipe(List<Input> inputs, ItemStack result, List<ItemStack
     public static final MapCodec<AlchemyRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Input.CODEC.listOf(1, 64).fieldOf("ingredients").forGetter(AlchemyRecipe::inputs),
             ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter(AlchemyRecipe::result),
-            ItemStack.VALIDATED_CODEC.listOf().optionalFieldOf("byproducts", List.of())
-                    .forGetter(AlchemyRecipe::byproducts)
+        Registries.FLUID.getCodec().optionalFieldOf("fluid", Fluids.WATER)
+            .forGetter(AlchemyRecipe::fluid),
+            ItemStack.VALIDATED_CODEC.listOf().optionalFieldOf("byproducts", List.of()).forGetter(AlchemyRecipe::byproducts)
     ).apply(instance, AlchemyRecipe::new));
     public static final RecipeType<AlchemyRecipe> TYPE = new RecipeType<>() {
         @Override
@@ -55,7 +59,7 @@ public record AlchemyRecipe(List<Input> inputs, ItemStack result, List<ItemStack
     public OfferingRecipe offering(String id) {
         Map<Item, Integer> ingredients = new LinkedHashMap<>();
         inputs.forEach(input -> ingredients.merge(input.item(), input.count(), Integer::sum));
-        return new OfferingRecipe(id, 0, false, Collections.unmodifiableMap(ingredients), result.copy());
+        return new OfferingRecipe(id, 0,new Range<>(0), false, Collections.unmodifiableMap(ingredients), result.copy(),fluid);
     }
 
     @Override

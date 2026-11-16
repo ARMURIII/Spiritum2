@@ -22,7 +22,7 @@ import net.minecraft.world.*;
 
 public class HexedCandleBlock extends BlockWithEntity {
     public static final MapCodec<HexedCandleBlock> CODEC = createCodec(HexedCandleBlock::new);
-    // 0: unlit, 1: blaze, 2: soul, 3: harvest, 4: ritual.
+    // 0: unlit, 1: blaze, 2: soul, 3: harvest, 4: ritual, 5: gem.
     public static final IntProperty FLAME = IntProperty.of("flame", 0, 5);
 
     public HexedCandleBlock(Settings settings) {

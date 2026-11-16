@@ -1,23 +1,36 @@
 package net.dark.spiritum.block.entity;
 
-import net.dark.spiritum.block.AlchemyVatBlock;
 import net.dark.spiritum.magic.*;
+import net.dark.spiritum.mixin.BucketItemAccessor;
 import net.dark.spiritum.registry.ModContent;
 import net.dark.spiritum.recipe.AlchemyRecipe;
 import net.minecraft.block.*;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.*;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 
+import java.util.Optional;
+
+@SuppressWarnings("unused")
 public class VatBlockEntity extends OfferingBlockEntity {
     private int boilTicks;
-    private volatile int waterColor = 0x3F76E4;
+    private Fluid fluid = Fluids.EMPTY;
+    private Fluid prevFluid;
+    private volatile int color = -1;
+    private float prevHeight;
+    private float height;
 
     public VatBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.VAT_ENTITY, pos, state);
@@ -27,19 +40,27 @@ public class VatBlockEntity extends OfferingBlockEntity {
         return boilTicks;
     }
 
-    public int getWaterColor() {
-        return waterColor;
+    public int getColor() {
+        return color;
+    }
+
+    public Fluid getFluid() {
+        return fluid;
+    }
+
+    public Fluid getPrevFluid() {
+        return prevFluid;
     }
 
     @Override
     public void changed() {
-        waterColor = calculateWaterColor();
+        color = calculateColor();
         super.changed();
     }
 
-    private int calculateWaterColor() {
+    private int calculateColor() {
         if (offerings.isEmpty()) return 0x3F76E4;
-        long red = 0, green = 0, blue = 0, total = 0;
+        int red = 0, green = 0, blue = 0, total = 0;
         for (ItemStack stack : offerings) {
             int color = ingredientColor(stack.getItem());
             int count = stack.getCount();
@@ -48,7 +69,7 @@ public class VatBlockEntity extends OfferingBlockEntity {
             blue += (color & 255) * count;
             total += count;
         }
-        return total == 0 ? 0x3F76E4 : ((int)(red / total) << 16) | ((int)(green / total) << 8) | (int)(blue / total);
+        return (total == 0 ? 0xFFFFFF : ((red / total) << 16) | ((green / total) << 8) | (blue / total));
     }
 
     private static int ingredientColor(Item item) {
@@ -62,64 +83,95 @@ public class VatBlockEntity extends OfferingBlockEntity {
         return 0xCEC7AD;
     }
 
-    public void fill() {
+    public float getHeight(float tickDelta) {
+        return MathHelper.lerp(tickDelta, this.prevHeight, this.height);
+    }
+
+    public void fill(ItemStack stack) {
         if (world == null) return;
+        prevFluid = fluid;
         boilTicks = 600;
-        InteractionEffects.splash(world, pos);
-        world.setBlockState(
-                pos, getCachedState().with(AlchemyVatBlock.FILLED, true), Block.NOTIFY_ALL);
+        if (stack.getItem() instanceof BucketItem bucketItem) {
+            fluid = bucketItem.getFluid();
+            if (fluid == Fluids.WATER)
+                InteractionEffects.splash(world, pos);
+            ((BucketItemAccessor) bucketItem).spiritum$playEmptyingSound(null, world, pos);
+        }
         changed();
+    }
+
+    public ItemStack empty(ItemStack stack) {
+        if (world == null) return stack;
+        if (fluid == Fluids.EMPTY) return stack;
+        else prevFluid = fluid;
+        empty();
+        if (prevFluid.getBucketFillSound().isPresent())
+            world.playSoundAtBlockCenterClient(pos,prevFluid.getBucketFillSound().get(),SoundCategory.BLOCKS,1f,1f,true);
+        world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
+        return prevFluid.getBucketItem().getDefaultStack();
     }
 
     private void empty() {
         boilTicks = 0;
-        world.setBlockState(
-                pos, getCachedState().with(AlchemyVatBlock.FILLED, false), Block.NOTIFY_ALL);
+        prevFluid = fluid;
+        fluid = Fluids.EMPTY;
         changed();
     }
 
-    public static void tick(World world, BlockPos pos, BlockState state, VatBlockEntity vat) {
-        if (!state.get(AlchemyVatBlock.FILLED)) return;
-        ServerWorld server = (ServerWorld) world;
-        if (world.getTime() % 5 == 0)
-            server.spawnParticles(
-                    ParticleTypes.BUBBLE_POP,
-                    pos.getX() + .5,
-                    pos.getY() + .8,
-                    pos.getZ() + .5,
-                    3,
-                    .25,
-                    .05,
-                    .25,
-                    .01);
+
+    public static void clientTick(World world, BlockPos pos, BlockState state, VatBlockEntity vat) {
+        vat.prevHeight = vat.height;
+        if (vat.fluid != Fluids.EMPTY)
+            vat.height = MathHelper.lerp(0.25f,vat.height,1f);
+        else
+            vat.height = MathHelper.lerp(0.5f,vat.height,0f);
+        if (vat.height < 1E-5)
+            vat.height = 0f;
+
+        if (vat.fluid == Fluids.EMPTY) return;
+
+        Random random = world.getRandom();
         if (world.getTime() % 20 == 0) {
-            server.spawnParticles(
-                    ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                    pos.getX() + .5,
-                    pos.getY() + 1,
-                    pos.getZ() + .5,
-                    1,
-                    .1,
-                    0,
-                    .1,
-                    .01);
-            vat.markDirty();
+            world.addParticleClient(
+                ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                pos.getX() + 0.5 + random.nextDouble() / 3.0 * (random.nextBoolean() ? 1 : -1),
+                pos.getY() + random.nextDouble(),
+                pos.getZ() + 0.5 + random.nextDouble() / 3.0 * (random.nextBoolean() ? 1 : -1),
+                0.0,
+                0.04,
+                0.0
+            );
         }
+
+        if (world.getTime() % 5 == 0 && vat.fluid == Fluids.WATER)
+            world.addParticleClient(
+                ParticleTypes.BUBBLE_POP,
+                pos.getX() + 0.5 + random.nextDouble() / 3.0 * (random.nextBoolean() ? 1 : -1),
+                pos.getY() + 0.8,
+                pos.getZ() + 0.5 + random.nextDouble() / 3.0 * (random.nextBoolean() ? 1 : -1),
+                0,
+                .05,
+                0);
+    }
+    public static void tick(World world, BlockPos pos, BlockState state, VatBlockEntity vat) {
+        if (vat.fluid == Fluids.EMPTY) return;
+        ServerWorld server = (ServerWorld) world;
         Box opening =
                 new Box(
                         pos.getX() + .12,
                         pos.getY() + .25,
                         pos.getZ() + .12,
                         pos.getX() + .88,
-                        pos.getY() + 1.25,
+                        pos.getY() + 1,
                         pos.getZ() + .88);
+
         var recipes = server.getRecipeManager().getAllOfType(AlchemyRecipe.TYPE);
         for (ItemEntity entity :
                 world.getEntitiesByClass(
                         ItemEntity.class, opening, e -> e.isAlive() && !e.getStack().isEmpty())) {
             // Accept only ingredients of at least one known recipe; accidental tools are safe.
             ItemStack stack = entity.getStack();
-            if (recipes.stream()
+            if (recipes.stream().filter(recipe -> recipe.value().fluid() == vat.getFluid())
                     .noneMatch(r -> r.value().inputs().stream()
                             .anyMatch(input -> stack.isOf(input.item())))) continue;
             vat.add(stack.copy());
@@ -127,7 +179,7 @@ public class VatBlockEntity extends OfferingBlockEntity {
         }
         for (var entry : recipes) {
             OfferingRecipe recipe = entry.value().offering(entry.id().getValue().toString());
-            if (recipe.matches(vat.offerings)) {
+            if (recipe.matches(vat.offerings) && recipe.fluid() == vat.fluid) {
                 recipe.consume(vat.offerings);
                 InteractionEffects.magic(world, Vec3d.ofCenter(pos).add(0, .5, 0), true);
                 vat.dropAll(); // Return extra ingredients rather than silently deleting them.
@@ -166,13 +218,7 @@ public class VatBlockEntity extends OfferingBlockEntity {
                         SoundCategory.BLOCKS,
                         1,
                         1);
-                return;
             }
-        }
-        if (--vat.boilTicks <= 0) {
-            InteractionEffects.snuff(world, pos);
-            vat.empty();
-            vat.dropAll();
         }
     }
 
@@ -180,7 +226,10 @@ public class VatBlockEntity extends OfferingBlockEntity {
     protected void readData(ReadView view) {
         super.readData(view);
         boilTicks = view.getInt("BoilTicks", 0);
-        waterColor = calculateWaterColor();
+        fluid = Optional.of(Registries.FLUID.get(Identifier.tryParse(view.getString("Fluid","")))).orElse(Fluids.EMPTY);
+        if (prevFluid == null)
+            prevFluid = fluid;
+        color = calculateColor();
         if (world != null && world.isClient()) world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_LISTENERS);
     }
 
@@ -188,5 +237,6 @@ public class VatBlockEntity extends OfferingBlockEntity {
     protected void writeData(WriteView view) {
         super.writeData(view);
         view.putInt("BoilTicks", boilTicks);
+        view.putString("Fluid",Registries.FLUID.getId(fluid).toString());
     }
 }

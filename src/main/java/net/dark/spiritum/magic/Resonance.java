@@ -174,9 +174,9 @@ public final class Resonance {
         ownership.put(
                 player.getUuid(),
                 new RodOwnership.Group(
-                        id, completed.size(), completed.size() == 4 ? now + 600 : now + 100));
+                        id, completed.size(), completed.size() == 4 ? now + 300 : now + 30));
         if (completed.size() == 4) completed.forEach(SingingRodEntity::seal);
-        player.getItemCooldownManager().set(context.getStack(), completed.size() == 4 ? 200 : 30);
+        player.getItemCooldownManager().set(context.getStack(), completed.size() == 4 ? 300 : 30);
         context.getStack()
                 .damage(
                         1,
@@ -238,7 +238,7 @@ public final class Resonance {
                 Vec3d a = polygon.get(i), b = polygon.get((i + 1) % 4);
                 double before = cross(a, b, start), after = cross(a, b, start.add(movement));
                 if (after < 0)
-                    fraction = Math.min(fraction, Math.max(0, before / (before - after) - .0001));
+                    fraction = Math.clamp(before / (before - after) - .0001, 0, fraction);
             }
             movement = new Vec3d(movement.x * fraction, movement.y, movement.z * fraction);
         }
@@ -256,13 +256,13 @@ public final class Resonance {
         if (polygon.isEmpty()) return;
         for (int i = 0; i < 4; i++) {
             Vec3d a = polygon.get(i), b = polygon.get((i + 1) % 4);
-            int steps = Math.min(32, Math.max(2, (int) a.distanceTo(b) * 2));
+            int steps = Math.clamp((int) a.distanceTo(b) * 2L, 2, 32);
             for (int j = 0; j <= steps; j++) {
                 Vec3d p = a.lerp(b, (double) j / steps);
                 world.spawnParticles(
                         ModParticles.RETROSONUS,
                         p.x,
-                        p.y + 1 + (world.getTime() / 10 % 4),
+                        p.y + 1 + ((double) world.getTime() / 10 % 4),
                         p.z,
                         1,
                         0,

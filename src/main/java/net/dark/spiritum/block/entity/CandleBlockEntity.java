@@ -92,7 +92,7 @@ public class CandleBlockEntity extends BlockEntity {
         markDirty();
     }
 
-    public static void tick(World world, BlockPos pos, BlockState state, CandleBlockEntity candle) {
+    public static void tick(World world, BlockPos pos, @SuppressWarnings("unused") BlockState state, CandleBlockEntity candle) {
         int flame = candle.flame();
         if (flame == 0) return;
         ServerWorld server = (ServerWorld) world;
@@ -128,7 +128,7 @@ public class CandleBlockEntity extends BlockEntity {
                             e -> e.isAlive() && e.squaredDistanceTo(center) <= 9)) {
                 if (flame == 1) entity.setOnFireFor(3);
                 else
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 80, 0));
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 80, 0,true,true));
             }
         }
         if (candle.ritualOwner != null

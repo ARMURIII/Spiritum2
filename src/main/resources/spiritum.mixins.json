@@ -2,7 +2,24 @@
   "required": true,
   "package": "net.dark.spiritum.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["ResonanceMovementMixin", "MobGoalsAccessor", "ItemPickupOwnerAccessor", "PlayerRingMixin", "ServerPlayerRingMixin", "PlayerRingSlotMixin", "RingDamageMixin", "CreativeRingPacketMixin"],
-  "client": ["InventoryRingScreenMixin", "CreativeRingScreenMixin", "TunedBladeCameraMixin", "TunedBladeArmMixin"],
-  "injectors": {"defaultRequire": 1}
+  "mixins": [
+    "BucketItemAccessor",
+    "CreativeRingPacketMixin",
+    "ItemPickupOwnerAccessor",
+    "ItemStackMixin",
+    "MobGoalsAccessor",
+    "PlayerRingMixin",
+    "PlayerRingSlotMixin",
+    "ResonanceMovementMixin",
+    "RingDamageMixin",
+    "ServerPlayerRingMixin"
+  ],
+  "client": [
+    "CreativeRingScreenMixin",
+    "InventoryRingScreenMixin",
+    "TunedBladeArmMixin",
+    "TunedBladeCameraMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1}
 }

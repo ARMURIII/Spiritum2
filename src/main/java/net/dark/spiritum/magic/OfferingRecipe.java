@@ -1,18 +1,18 @@
 package net.dark.spiritum.magic;
 
+import net.minecraft.fluid.Fluid;
 import net.minecraft.item.*;
+import net.minecraft.util.dynamic.Range;
 
 import java.util.*;
 
 public record OfferingRecipe(
-        String id, int candles, boolean persistent, Map<Item, Integer> ingredients, ItemStack result) {
-    public Item output() {
-        return result.getItem();
-    }
+    String id, int candles, Range<Integer> ownerCandles, boolean persistent, Map<Item, Integer> ingredients, ItemStack result, Fluid fluid) {
 
     public ItemStack outputStack() {
         return result.copy();
     }
+
     public static Map<Item, Integer> ingredients(Object... pairs) {
         Map<Item, Integer> result = new LinkedHashMap<>();
         for (int i = 0; i < pairs.length; i += 2)

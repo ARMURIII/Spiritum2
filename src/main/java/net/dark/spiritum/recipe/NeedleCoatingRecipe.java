@@ -50,6 +50,7 @@ public class NeedleCoatingRecipe extends SpecialCraftingRecipe {
             return ItemStack.EMPTY;
         needle.set(
                 DataComponentTypes.POTION_CONTENTS, potion.get(DataComponentTypes.POTION_CONTENTS));
+        needle.set(DataComponentTypes.MAX_STACK_SIZE, 1);
         needle.set(DataComponentTypes.POTION_DURATION_SCALE, .25f);
         return needle;
     }

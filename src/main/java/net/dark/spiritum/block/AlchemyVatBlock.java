@@ -7,11 +7,8 @@ import net.dark.spiritum.registry.ModContent;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -20,21 +17,14 @@ import net.minecraft.world.*;
 
 public class AlchemyVatBlock extends BlockWithEntity {
     public static final MapCodec<AlchemyVatBlock> CODEC = createCodec(AlchemyVatBlock::new);
-    public static final BooleanProperty FILLED = BooleanProperty.of("filled");
 
     public AlchemyVatBlock(Settings settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(FILLED, false));
     }
 
     @Override
     protected MapCodec<? extends BlockWithEntity> getCodec() {
         return CODEC;
-    }
-
-    @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FILLED);
     }
 
     @Override
@@ -46,7 +36,7 @@ public class AlchemyVatBlock extends BlockWithEntity {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             World world, BlockState state, BlockEntityType<T> type) {
         return world.isClient()
-                ? null
+                ? validateTicker(type, ModContent.VAT_ENTITY, VatBlockEntity::clientTick)
                 : validateTicker(type, ModContent.VAT_ENTITY, VatBlockEntity::tick);
     }
 
@@ -74,12 +64,16 @@ public class AlchemyVatBlock extends BlockWithEntity {
             PlayerEntity player,
             Hand hand,
             BlockHitResult hit) {
-        if (!stack.isOf(Items.WATER_BUCKET) || state.get(FILLED)) return ActionResult.PASS;
-        if (!world.isClient() && world.getBlockEntity(pos) instanceof VatBlockEntity vat) {
-            vat.fill();
-            player.setStackInHand(
+        if (!(stack.getItem() instanceof BucketItem)) return ActionResult.PASS;
+        if (world.getBlockEntity(pos) instanceof VatBlockEntity vat) {
+            if (stack.isOf(Items.BUCKET) && vat.getFluid() != Fluids.EMPTY)
+                player.setStackInHand(
+                    hand, ItemUsage.exchangeStack(stack, player,vat.empty(stack)));
+            else if (vat.getFluid() == Fluids.EMPTY) {
+                vat.fill(stack);
+                player.setStackInHand(
                     hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.BUCKET)));
-            world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1, 1);
+            }
         }
         return ActionResult.SUCCESS;
     }

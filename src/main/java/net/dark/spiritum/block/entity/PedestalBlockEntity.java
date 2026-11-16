@@ -1,5 +1,6 @@
 package net.dark.spiritum.block.entity;
 
+import net.dark.spiritum.block.HexedCandleBlock;
 import net.dark.spiritum.magic.*;
 import net.dark.spiritum.magic.RingMagic;
 import net.dark.spiritum.registry.ModContent;
@@ -136,7 +137,7 @@ public class PedestalBlockEntity extends OfferingBlockEntity {
     }
 
     public static void tick(
-            World world, BlockPos pos, BlockState state, PedestalBlockEntity pedestal) {
+        World world, BlockPos pos, @SuppressWarnings("unused") BlockState state, PedestalBlockEntity pedestal) {
         if (world.isClient()) {
             if (pedestal.isSustained() && pedestal.activeRitual.equals("dominion")) Dominion.add(world, pos);
             else Dominion.remove(world, pos);
@@ -198,6 +199,8 @@ public class PedestalBlockEntity extends OfferingBlockEntity {
                 if (recipe.matches(pedestal.offerings)) {
                     recipe.consume(pedestal.offerings);
                     RitualEffects.trigger(server, pos, recipe, pedestal.boundPlayers);
+                    if (!recipe.outputStack().isEmpty())
+                        Block.dropStack(world, pos.up(), recipe.outputStack());
                     if (recipe.id().endsWith("_binding") && !boundGem.isEmpty())
                         Block.dropStack(world, pos.up(), boundGem);
                 }
@@ -227,8 +230,10 @@ public class PedestalBlockEntity extends OfferingBlockEntity {
         candles.clear();
         view.getTypedListView("Candles", BlockPos.CODEC).forEach(candles::add);
         OfferingRecipe recipe = MagicRecipes.ritual(activeRitual);
+
+        List<Integer> candlesType = candles.stream().map(pos -> world.getBlockState(pos).get(HexedCandleBlock.FLAME,0)).toList();
         if (recipe == null
-                || !RitualCandles.validCount(recipe, candles.size())
+                || !RitualCandles.validCount(recipe, candlesType)
                 || extinguished < 0
                 || extinguished >= candles.size()) {
             activeRitual = "";

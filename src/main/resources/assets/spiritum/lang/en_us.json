@@ -76,6 +76,8 @@
   "ritual.spiritum.dominion": "Rite of Dominion",
   "ritual.spiritum.vigilance": "Rite of Vigilance",
 
+  "vat_liquid.spiritum.milk": "Milk",
+
   "entity.spiritum.leech_demon": "Leech Demon",
   "entity.spiritum.imp_demon": "Imp Demon",
   "entity.spiritum.lemure_demon": "Lemure Demon",
@@ -151,6 +153,7 @@
   "viewer.spiritum.alchemy": "Spirit Alchemy",
   "viewer.spiritum.boiling_water": "Drop items into a filled, boiling vat.",
   "viewer.spiritum.vat_instant": "Finishes instantly.",
+  "viewer.spiritum.vat_duration": "Finishes within %ss.",
   "viewer.spiritum.candles": "%s candles, fueled with fragments or gems",
   "viewer.spiritum.bound_candles": "%s ordinary + %s player-bound candle",
   "viewer.spiritum.optional_candles": "%s ordinary + %s—%s player-bound candles",

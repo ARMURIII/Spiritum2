@@ -1,7 +1,7 @@
 package net.dark.spiritum.magic;
 
 import net.dark.spiritum.block.entity.PedestalBlockEntity;
-import net.dark.spiritum.registry.ModParticles;
+import net.dark.spiritum.registry.SpiritumParticles;
 import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.block.EnderChestBlock;
 import net.minecraft.entity.player.PlayerEntity;
@@ -58,7 +58,7 @@ public final class Dominion {
         }
         Vec3d normal = Vec3d.of(face.getVector());
         server.spawnParticles(
-                ModParticles.DOMINION_RUNE,
+                SpiritumParticles.DOMINION_RUNE,
                 point.x,
                 point.y,
                 point.z,

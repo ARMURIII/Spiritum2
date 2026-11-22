@@ -1,4 +1,4 @@
-package net.dark.spiritum.mixin;
+package net.dark.spiritum.mixin.accessor;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BucketItem;

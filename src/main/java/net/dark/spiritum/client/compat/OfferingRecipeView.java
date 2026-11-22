@@ -1,27 +1,19 @@
 package net.dark.spiritum.client.compat;
 
 import net.dark.spiritum.magic.*;
-import net.dark.spiritum.registry.ModContent;
-import net.dark.spiritum.recipe.AlchemyRecipe;
-import net.minecraft.client.MinecraftClient;
+import net.dark.spiritum.registry.SpiritumContent;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
 import net.minecraft.text.Text;
 
 import java.util.*;
 
-public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
+public record OfferingRecipeView(OfferingRecipe recipe) {
     public List<ItemStack> inputs() {
         List<ItemStack> inputs = new ArrayList<>();
         recipe.ingredients().forEach((item, count) -> inputs.add(new ItemStack(item, count)));
         return inputs;
-    }
-
-    public Fluid fluid() {
-        return alchemy ? recipe.fluid() : Fluids.EMPTY;
     }
 
     public List<ItemStack> spirits() {
@@ -29,11 +21,11 @@ public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
         int count = recipe.ownerCandles().maxInclusive();
 
         for (int i = 0; i < recipe.candles()-(RitualCandles.requiresOwner(recipe)?1:0); i++)
-            inputs.add(new ItemStack(ModContent.SPIRIT_FRAGMENT));
+            inputs.add(new ItemStack(SpiritumContent.SPIRIT_FRAGMENT));
 
         if (count>0) {
             for (int i = 0; i < count; i++) {
-                ItemStack gem = new ItemStack(ModContent.SPIRIT_GEM);
+                ItemStack gem = new ItemStack(SpiritumContent.SPIRIT_GEM);
                 NbtComponent.set(
                     DataComponentTypes.CUSTOM_DATA,
                     gem,
@@ -55,15 +47,10 @@ public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
     }
 
     public Text title() {
-        return alchemy ? output().getName() : Text.translatable("ritual.spiritum." + recipe.id());
+        return Text.translatable("ritual.spiritum." + recipe.id());
     }
 
     public List<Text> notes() {
-        if (alchemy)
-            return List.of(
-                    Text.translatable("viewer.spiritum.boiling_water"),
-                    Text.translatable("viewer.spiritum.vat_instant"));
-
         List<Text> notes = new ArrayList<>();
         if (RitualCandles.requiresOwner(recipe) || (recipe.ownerCandles().minInclusive() == recipe.ownerCandles().maxInclusive() && recipe.ownerCandles().minInclusive() != 0))
             notes.add(Text.translatable("viewer.spiritum.bound_candles", recipe.candles()-recipe.ownerCandles().minInclusive(),recipe.ownerCandles().minInclusive()));
@@ -83,15 +70,7 @@ public record MagicRecipeView(OfferingRecipe recipe, boolean alchemy) {
         return notes;
     }
 
-    public static List<MagicRecipeView> rituals() {
-        return MagicRecipes.RITUALS.stream().map(r -> new MagicRecipeView(r, false)).toList();
-    }
-
-    public static List<MagicRecipeView> alchemyRecipes() {
-        var world = MinecraftClient.getInstance().world;
-        if (world == null) return List.of();
-        return world.getRecipeManager().getSynchronizedRecipes().getAllOfType(AlchemyRecipe.TYPE)
-                .stream().map(entry -> new MagicRecipeView(
-                        entry.value().offering(entry.id().getValue().toString()), true)).toList();
+    public static List<OfferingRecipeView> rituals() {
+        return MagicRecipes.RITUALS.stream().map(OfferingRecipeView::new).toList();
     }
 }

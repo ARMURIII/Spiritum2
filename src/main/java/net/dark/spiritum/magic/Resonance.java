@@ -1,9 +1,9 @@
 package net.dark.spiritum.magic;
 
 import net.dark.spiritum.entity.SingingRodEntity;
-import net.dark.spiritum.registry.ModContent;
-import net.dark.spiritum.registry.ModEntities;
-import net.dark.spiritum.registry.ModParticles;
+import net.dark.spiritum.registry.SpiritumContent;
+import net.dark.spiritum.registry.SpiritumEntities;
+import net.dark.spiritum.registry.SpiritumParticles;
 import net.minecraft.entity.*;
 import net.minecraft.item.*;
 import net.minecraft.server.world.ServerWorld;
@@ -27,7 +27,7 @@ public final class Resonance {
     }
 
     public static boolean enabled(ItemStack stack) {
-        return stack.isOf(ModContent.RETROSONUS);
+        return stack.isOf(SpiritumContent.RETROSONUS);
     }
 
     public static void dissolve(SingingRodEntity broken) {
@@ -89,7 +89,7 @@ public final class Resonance {
                         .orElse(Double.NaN);
         if (!Double.isFinite(surface)) return ActionResult.FAIL;
         Vec3d position = new Vec3d(hit.x, block.getY() + surface, hit.z);
-        var rod = ModEntities.SINGING_ROD.create(world, SpawnReason.TRIGGERED);
+        var rod = SpiritumEntities.SINGING_ROD.create(world, SpawnReason.TRIGGERED);
         if (rod == null) return ActionResult.FAIL;
         rod.refreshPositionAndAngles(position.x, position.y, position.z, 0, 0);
         if (!world.isSpaceEmpty(rod, rod.getBoundingBox())) return ActionResult.FAIL;
@@ -260,9 +260,9 @@ public final class Resonance {
             for (int j = 0; j <= steps; j++) {
                 Vec3d p = a.lerp(b, (double) j / steps);
                 world.spawnParticles(
-                        ModParticles.RETROSONUS,
+                        SpiritumParticles.RETROSONUS,
                         p.x,
-                        p.y + 1 + ((double) world.getTime() / 10 % 4),
+                        p.y + ((double) world.getTime() / 10 % 4),
                         p.z,
                         1,
                         0,

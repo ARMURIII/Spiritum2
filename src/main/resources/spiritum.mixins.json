@@ -2,9 +2,10 @@
   "required": true,
   "package": "net.dark.spiritum.mixin",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "net.dark.spiritum.mixin.plugin.SpiritumMixinPlugin",
   "mixins": [
-    "BucketItemAccessor",
     "CreativeRingPacketMixin",
+    "ItemGroupEntriesMixin",
     "ItemPickupOwnerAccessor",
     "ItemStackMixin",
     "MobGoalsAccessor",
@@ -12,10 +13,14 @@
     "PlayerRingSlotMixin",
     "ResonanceMovementMixin",
     "RingDamageMixin",
-    "ServerPlayerRingMixin"
+    "ServerPlayerRingMixin",
+    "SimpleRegistryMixin",
+    "accessor.BucketItemAccessor",
+    "accessor.EntityAccessor"
   ],
   "client": [
     "CreativeRingScreenMixin",
+    "FluidVariantRenderingMixin",
     "InventoryRingScreenMixin",
     "TunedBladeArmMixin",
     "TunedBladeCameraMixin"

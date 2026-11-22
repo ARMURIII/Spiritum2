@@ -27,8 +27,8 @@ public abstract class CreativeRingScreenMixin extends HandledScreen<ScreenHandle
                                     "Lnet/minecraft/client/gui/screen/ingame/CreativeInventoryScreen$CreativeSlot;<init>(Lnet/minecraft/screen/slot/Slot;III)V"))
     private void spiritum$position(Args args) {
         if ((int) args.get(1) == 46) {
-            args.set(2, 35);
-            args.set(3, 38);
+            args.set(2, 127);
+            args.set(3, 20);
         }
     }
 
@@ -36,7 +36,7 @@ public abstract class CreativeRingScreenMixin extends HandledScreen<ScreenHandle
     private void spiritum$background(
             DrawContext context, float delta, int mouseX, int mouseY, CallbackInfo ci) {
         if (handler.slots.size() != 48) return;
-        int left = x + 34, top = y + 37;
+        int left = x + 126, top = y + 19;
         context.fill(left, top, left + 18, top + 18, 0xFF373737);
         context.fill(left + 1, top + 1, left + 18, top + 18, 0xFFFFFFFF);
         context.fill(left + 1, top + 1, left + 17, top + 17, 0xFF8B8B8B);

@@ -18,7 +18,7 @@ import java.util.List;
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
     @Inject(method = "getTooltip", at = @At(value = "INVOKE", target = "Ljava/util/Objects;requireNonNull(Ljava/lang/Object;)Ljava/lang/Object;",shift = At.Shift.AFTER))
-    private void getTooltip(Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> cir, @Local List<Text> list) {
+    private void spiritum$getTooltip(Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> cir, @Local List<Text> list) {
         ItemPreTooltipCallback.BEFORE.invoker().getTooltip((ItemStack) (Object) this, context, type, list);
     }
 }

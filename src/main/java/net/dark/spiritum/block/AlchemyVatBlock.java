@@ -3,11 +3,11 @@ package net.dark.spiritum.block;
 import com.mojang.serialization.MapCodec;
 
 import net.dark.spiritum.block.entity.VatBlockEntity;
-import net.dark.spiritum.registry.ModContent;
+import net.dark.spiritum.registry.SpiritumContent;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.*;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
@@ -36,8 +36,8 @@ public class AlchemyVatBlock extends BlockWithEntity {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             World world, BlockState state, BlockEntityType<T> type) {
         return world.isClient()
-                ? validateTicker(type, ModContent.VAT_ENTITY, VatBlockEntity::clientTick)
-                : validateTicker(type, ModContent.VAT_ENTITY, VatBlockEntity::tick);
+                ? validateTicker(type, SpiritumContent.VAT_ENTITY, VatBlockEntity::tickClient)
+                : validateTicker(type, SpiritumContent.VAT_ENTITY, VatBlockEntity::tickServer);
     }
 
     @Override
@@ -64,17 +64,32 @@ public class AlchemyVatBlock extends BlockWithEntity {
             PlayerEntity player,
             Hand hand,
             BlockHitResult hit) {
-        if (!(stack.getItem() instanceof BucketItem)) return ActionResult.PASS;
-        if (world.getBlockEntity(pos) instanceof VatBlockEntity vat) {
-            if (stack.isOf(Items.BUCKET) && vat.getFluid() != Fluids.EMPTY)
-                player.setStackInHand(
-                    hand, ItemUsage.exchangeStack(stack, player,vat.empty(stack)));
-            else if (vat.getFluid() == Fluids.EMPTY) {
-                vat.fill(stack);
-                player.setStackInHand(
-                    hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.BUCKET)));
+        if (!stack.isIn(ConventionalItemTags.BUCKETS)) {
+            if (world.getBlockEntity(pos) instanceof VatBlockEntity vat) {
+                if (stack.getItem() instanceof GlassBottleItem) {
+                    if (vat.decrementVat(stack, player, hand).isAccepted())
+                        return ActionResult.SUCCESS;
+                }
+                if (stack.isOf(Items.POTION)) {
+                    if (vat.incrementVat(stack, player, hand).isAccepted())
+                        return ActionResult.SUCCESS;
+                }
+
+                if (vat.canInsert(stack)){
+                    vat.insert(stack, player);
+                    return ActionResult.SUCCESS;
+                }
             }
+            return ActionResult.PASS;
         }
-        return ActionResult.SUCCESS;
+        if (world.getBlockEntity(pos) instanceof VatBlockEntity vat) {
+            if (stack.isOf(Items.BUCKET)) {
+                if (vat.emptyVat(stack, player, hand).isAccepted())
+                    return ActionResult.SUCCESS;
+            }
+            else if (vat.fillVat(stack, player, hand).isAccepted())
+                    return ActionResult.SUCCESS;
+        }
+        return ActionResult.PASS;
     }
 }

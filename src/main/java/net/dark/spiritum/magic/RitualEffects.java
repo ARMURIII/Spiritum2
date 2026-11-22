@@ -1,8 +1,8 @@
 package net.dark.spiritum.magic;
 
 import net.dark.spiritum.entity.OwnedDemonEntity;
-import net.dark.spiritum.registry.ModEntities;
-import net.dark.spiritum.registry.ModParticles;
+import net.dark.spiritum.registry.SpiritumEntities;
+import net.dark.spiritum.registry.SpiritumParticles;
 import net.minecraft.block.*;
 import net.minecraft.entity.*;
 import net.minecraft.entity.effect.*;
@@ -51,11 +51,11 @@ public final class RitualEffects {
             EntityType.OAK_BOAT.spawn(world, pos.up(), SpawnReason.TRIGGERED));
 
         ID2EFFECT_MAP.put("leech_binding",(world,pos,boundPlayers)->
-            summon(world, pos, ModEntities.LEECH, boundPlayers));
+            summon(world, pos, SpiritumEntities.LEECH, boundPlayers));
         ID2EFFECT_MAP.put("imp_binding",(world,pos,boundPlayers)->
-            summon(world, pos, ModEntities.IMP, boundPlayers));
+            summon(world, pos, SpiritumEntities.IMP, boundPlayers));
         ID2EFFECT_MAP.put("lemure_binding",(world,pos,boundPlayers)->
-            summon(world, pos, ModEntities.LEMURE, boundPlayers));
+            summon(world, pos, SpiritumEntities.LEMURE, boundPlayers));
         ID2EFFECT_MAP.put("calling",(world,pos,boundPlayers)-> {
             if (!boundPlayers.isEmpty()) {
                 var player =
@@ -82,7 +82,7 @@ public final class RitualEffects {
             ServerWorld world, BlockPos pos, OfferingRecipe rite, Set<UUID> boundPlayers) {
         ID2EFFECT_MAP.getOrDefault(rite.id(),(a,b,c)->{}).accept(world,pos,boundPlayers);
         world.spawnParticles(
-                ModParticles.BIG_HEXFLAME,
+                SpiritumParticles.BIG_HEXFLAME,
                 pos.getX() + .5,
                 pos.getY() + 1.5,
                 pos.getZ() + .5,
@@ -200,13 +200,13 @@ public final class RitualEffects {
     }
 
     public static void sigil(ServerWorld world, BlockPos pos, OfferingRecipe rite, int elapsed) {
-        var sprite = ModParticles.sigil(rite.id());
+        var sprite = SpiritumParticles.sigil(rite.id());
         if (sprite != null)
             world.spawnParticles(
                     sprite, pos.getX() + .5, pos.getY() + 2.6, pos.getZ() + .5, 1, 0, 0, 0, 0);
         double angle = elapsed * .12;
         world.spawnParticles(
-                isHighRitual(rite.id()) ? ModParticles.BIG_HEXFLAME : ModParticles.HEXFLAME,
+                isHighRitual(rite.id()) ? SpiritumParticles.BIG_HEXFLAME : SpiritumParticles.HEXFLAME,
                 pos.getX() + .5 + Math.cos(angle) * .7,
                 pos.getY() + 1.75,
                 pos.getZ() + .5 + Math.sin(angle) * .7,

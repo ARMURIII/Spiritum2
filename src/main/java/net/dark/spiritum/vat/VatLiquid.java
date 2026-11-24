@@ -12,6 +12,7 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -50,6 +51,11 @@ public class VatLiquid extends FlowableFluid {
     @Override
     public Fluid getStill() {
         return this;
+    }
+
+    @Override
+    public boolean isIn(TagKey<Fluid> tag) {
+        return false;
     }
 
     @Override

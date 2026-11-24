@@ -1,13 +1,16 @@
 package net.dark.spiritum.client.compat;
 
-import net.dark.spiritum.magic.*;
+import net.dark.spiritum.magic.MagicRecipes;
+import net.dark.spiritum.magic.OfferingRecipe;
 import net.dark.spiritum.registry.SpiritumContent;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public record OfferingRecipeView(OfferingRecipe recipe) {
     public List<ItemStack> inputs() {
@@ -20,7 +23,7 @@ public record OfferingRecipeView(OfferingRecipe recipe) {
         List<ItemStack> inputs = new ArrayList<>();
         int count = recipe.ownerCandles().maxInclusive();
 
-        for (int i = 0; i < recipe.candles()-(RitualCandles.requiresOwner(recipe)?1:0); i++)
+        for (int i = 0; i < recipe.candles()-recipe.ownerCandles().minInclusive(); i++)
             inputs.add(new ItemStack(SpiritumContent.SPIRIT_FRAGMENT));
 
         if (count>0) {
@@ -47,12 +50,12 @@ public record OfferingRecipeView(OfferingRecipe recipe) {
     }
 
     public Text title() {
-        return Text.translatable("ritual.spiritum." + recipe.id());
+        return Text.translatable(recipe.id().toTranslationKey("ritual"));
     }
 
     public List<Text> notes() {
         List<Text> notes = new ArrayList<>();
-        if (RitualCandles.requiresOwner(recipe) || (recipe.ownerCandles().minInclusive() == recipe.ownerCandles().maxInclusive() && recipe.ownerCandles().minInclusive() != 0))
+        if (recipe.ownerCandles().minInclusive() == recipe.ownerCandles().maxInclusive() && recipe.ownerCandles().minInclusive() != 0)
             notes.add(Text.translatable("viewer.spiritum.bound_candles", recipe.candles()-recipe.ownerCandles().minInclusive(),recipe.ownerCandles().minInclusive()));
         else if (recipe.ownerCandles().maxInclusive()>0)
             notes.add(Text.translatable("viewer.spiritum.optional_candles", recipe.candles()-recipe.ownerCandles().minInclusive(),recipe.ownerCandles().minInclusive(),recipe.ownerCandles().maxInclusive()));
@@ -62,10 +65,10 @@ public record OfferingRecipeView(OfferingRecipe recipe) {
                         recipe.persistent()
                                 ? "viewer.spiritum.persistent"
                                 : "viewer.spiritum.instant"));
-        notes.add(Text.translatable("viewer.spiritum.effect." + recipe.id()));
-        if (recipe.id().endsWith("_binding"))
+        notes.add(Text.translatable("viewer.spiritum.effect." + recipe.id().getPath()));
+        if (recipe.id().getPath().endsWith("_binding"))
             notes.add(Text.translatable("viewer.spiritum.binding_return"));
-        else if (recipe.id().equals("withering"))
+        else if (recipe.id().getPath().equals("withering"))
             notes.add(Text.translatable("viewer.spiritum.bound_protection"));
         return notes;
     }

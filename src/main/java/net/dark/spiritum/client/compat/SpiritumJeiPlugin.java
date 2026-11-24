@@ -1,25 +1,29 @@
 package net.dark.spiritum.client.compat;
 
-import mezz.jei.api.*;
+import mezz.jei.api.IModPlugin;
+import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.fabric.constants.FabricTypes;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
-import mezz.jei.api.recipe.*;
+import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeHolderType;
 import mezz.jei.api.recipe.types.IRecipeType;
-import mezz.jei.api.registration.*;
-
+import mezz.jei.api.registration.IExtraIngredientRegistration;
+import mezz.jei.api.registration.IRecipeCatalystRegistration;
+import mezz.jei.api.registration.IRecipeCategoryRegistration;
+import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.common.platform.Services;
 import mezz.jei.library.plugins.vanilla.ingredients.fluid.FluidStackListFactory;
-import net.dark.spiritum.Spiritum;
 import net.dark.spiritum.recipe.AlchemyRecipe;
 import net.dark.spiritum.registry.SpiritumContent;
 import net.dark.spiritum.registry.SpiritumRegistries;
 import net.dark.spiritum.vat.LiquidPotion;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.render.state.ItemGuiElementRenderState;
@@ -54,6 +58,7 @@ public final class SpiritumJeiPlugin implements IModPlugin {
     @Override
     public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime available) {
         runtime = available;
+        if (FabricLoader.getInstance().isModLoaded("emi")) return;
         hideUpgradeRecipe(
                 available.getRecipeManager(),
                 mezz.jei.api.constants.RecipeTypes.CRAFTING,
@@ -103,12 +108,14 @@ public final class SpiritumJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        if (FabricLoader.getInstance().isModLoaded("emi")) return;
         registration.addRecipes(RITUALS, OfferingRecipeView.rituals());
         registration.addRecipes(ALCHEMY, AlchemyRecipeView.alchemyRecipes());
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        if (FabricLoader.getInstance().isModLoaded("emi")) return;
         registration.addCraftingStation(RITUALS, new ItemStack(SpiritumContent.RITUAL_PEDESTAL), new ItemStack(SpiritumContent.HEXED_CANDLE));
         registration.addCraftingStation(ALCHEMY, new ItemStack(SpiritumContent.ALCHEMY_VAT));
     }
@@ -152,7 +159,7 @@ public final class SpiritumJeiPlugin implements IModPlugin {
         public Identifier getIdentifier(OfferingRecipeView recipe) {
             //if (IRecipeCategory.super.getIdentifier(recipe) != null)
             //return IRecipeCategory.super.getIdentifier(recipe);
-            return Identifier.of(Spiritum.MOD_ID, recipe.recipe().id());
+            return recipe.recipe().id();
         }
 
         @Override
@@ -171,11 +178,11 @@ public final class SpiritumJeiPlugin implements IModPlugin {
             else
                 for (int i = 0; i < spirits.size(); i++) {
                     if (spirits.get(i).isOf(SpiritumContent.SPIRIT_GEM) && view.recipe().ownerCandles().minInclusive() != view.recipe().ownerCandles().maxInclusive()) {
-                        builder.addSlot(RecipeIngredientRole.INPUT, 4 + i * length / (7), 46)
+                        builder.addSlot(RecipeIngredientRole.INPUT, 4 + Math.round(i * length / (7f)), 46)
                             .add(spirits.get(i));
                     } else
-                        builder.addSlot(RecipeIngredientRole.INPUT, 4 + i * length / (7), 46)
-                            .addItemStacks(List.of(spirits.get(i)));
+                        builder.addSlot(RecipeIngredientRole.INPUT, 4 + Math.round(i * length / (7f)), 46)
+                            .addItemStacks(List.of(spirits.get(i),ItemStack.EMPTY));
                 }
 
             if (!view.output().isEmpty())
@@ -202,7 +209,7 @@ public final class SpiritumJeiPlugin implements IModPlugin {
                 drawCandle(0, 53, draw);
             else
                 for (int i = 0; i < spirits.size(); i++)
-                        drawCandle(i * length / (7), 53, draw);
+                        drawCandle(Math.round(i * length / (7f)), 53, draw);
 
             if (!view.output().isEmpty()) draw.drawText(font, "→", 130, 38, 0xff555555, false);
             int y = 76;
@@ -226,7 +233,7 @@ public final class SpiritumJeiPlugin implements IModPlugin {
 
                 try {
                     draw.state.addItem(new ItemGuiElementRenderState(stack.getItem().getName().toString(),
-                        new Matrix3x2f(draw.getMatrices()).scale(1.5f), keyedItemRenderState, (int) (x / 1.5f), (int) (y / 1.5f), draw.scissorStack.peekLast()));
+                        new Matrix3x2f(draw.getMatrices()).scale(1.5f), keyedItemRenderState, Math.round(x / 1.5f), Math.round(y / 1.5f), draw.scissorStack.peekLast()));
                 } catch (Throwable throwable) {
                     CrashReport crashReport = CrashReport.create(throwable, "Rendering item");
                     CrashReportSection crashReportSection = crashReport.addElement("Item being rendered");

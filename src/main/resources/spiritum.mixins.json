@@ -5,6 +5,7 @@
   "plugin": "net.dark.spiritum.mixin.plugin.SpiritumMixinPlugin",
   "mixins": [
     "CreativeRingPacketMixin",
+    "FluidVariantAttributesMixin",
     "ItemGroupEntriesMixin",
     "ItemPickupOwnerAccessor",
     "ItemStackMixin",
@@ -16,11 +17,15 @@
     "ServerPlayerRingMixin",
     "SimpleRegistryMixin",
     "accessor.BucketItemAccessor",
-    "accessor.EntityAccessor"
+    "accessor.EntityAccessor",
+    "emi$.EmiTagKeyMixin",
+    "emi$.EmiUtilMixin",
+    "emi$.FluidEmiStackMixin",
+    "emi$.FluidEmiStackSerializerMixin",
+    "emi$.JemiTextWidgetMixin"
   ],
   "client": [
     "CreativeRingScreenMixin",
-    "FluidVariantRenderingMixin",
     "InventoryRingScreenMixin",
     "TunedBladeArmMixin",
     "TunedBladeCameraMixin"

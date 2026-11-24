@@ -149,6 +149,9 @@
   "viewer.spiritum.effect.vigilance": "Sentinels within 50 blocks defend attacked players bound by the candles.",
   "viewer.spiritum.effect.dominion": "Unbound players mine blocks like obsidian and cannot use storage within 50 blocks.",
 
+  "emi.category.spiritum.ritual": "Spirit Rituals",
+  "emi.category.spiritum.alchemy": "Spirit Rituals",
+
   "viewer.spiritum.rituals": "Spirit Rituals",
   "viewer.spiritum.alchemy": "Spirit Alchemy",
   "viewer.spiritum.boiling_water": "Drop items into a filled, boiling vat.",

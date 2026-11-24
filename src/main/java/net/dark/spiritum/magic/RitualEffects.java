@@ -1,18 +1,25 @@
 package net.dark.spiritum.magic;
 
+import net.dark.spiritum.Spiritum;
 import net.dark.spiritum.entity.OwnedDemonEntity;
 import net.dark.spiritum.registry.SpiritumEntities;
 import net.dark.spiritum.registry.SpiritumParticles;
 import net.minecraft.block.*;
-import net.minecraft.entity.*;
-import net.minecraft.entity.effect.*;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.*;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.*;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.rule.GameRules;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -26,37 +33,37 @@ public final class RitualEffects {
         trigger(world, pos, rite, Set.of());
     }
 
-    public static Map<String, TriConsumer<ServerWorld,BlockPos,Set<UUID>>> ID2EFFECT_MAP = new HashMap<>();
+    public static Map<Identifier, TriConsumer<ServerWorld,BlockPos,Set<UUID>>> ID2EFFECT_MAP = new HashMap<>();
 
     static {
-        ID2EFFECT_MAP.put("rain",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("rain"),(world, pos, players)->
             world.getServer().getWorld(World.OVERWORLD).setWeather(0, 12000, true, false));
-        ID2EFFECT_MAP.put("clear_skies",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("clear_skies"),(world,pos,players)->
             world.getServer().getWorld(World.OVERWORLD).setWeather(12000, 0, false, false));
-        ID2EFFECT_MAP.put("thunder",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("thunder"),(world,pos,players)->
             world.getServer().getWorld(World.OVERWORLD).setWeather(0, 12000, true, true));
 
-        ID2EFFECT_MAP.put("daytime",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("daytime"),(world,pos,players)->
             setTimeWithinCurrentDay(world.getServer().getWorld(World.OVERWORLD), 6000));
-        ID2EFFECT_MAP.put("nighttime",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("nighttime"),(world,pos,players)->
             setTimeWithinCurrentDay(world.getServer().getWorld(World.OVERWORLD), 18000));
 
-        ID2EFFECT_MAP.put("zombie_summoning",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("zombie_summoning"),(world,pos,players)->
             EntityType.ZOMBIE.spawn(world, pos.up(), SpawnReason.TRIGGERED));
 
-        ID2EFFECT_MAP.put("skeleton_summoning",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("skeleton_summoning"),(world,pos,players)->
             EntityType.SKELETON.spawn(world, pos.up(), SpawnReason.TRIGGERED));
 
-        ID2EFFECT_MAP.put("boat_summoning",(world,pos,players)->
+        ID2EFFECT_MAP.put(Spiritum.id("boat_summoning"),(world,pos,players)->
             EntityType.OAK_BOAT.spawn(world, pos.up(), SpawnReason.TRIGGERED));
 
-        ID2EFFECT_MAP.put("leech_binding",(world,pos,boundPlayers)->
+        ID2EFFECT_MAP.put(Spiritum.id("leech_binding"),(world,pos,boundPlayers)->
             summon(world, pos, SpiritumEntities.LEECH, boundPlayers));
-        ID2EFFECT_MAP.put("imp_binding",(world,pos,boundPlayers)->
+        ID2EFFECT_MAP.put(Spiritum.id("imp_binding"),(world,pos,boundPlayers)->
             summon(world, pos, SpiritumEntities.IMP, boundPlayers));
-        ID2EFFECT_MAP.put("lemure_binding",(world,pos,boundPlayers)->
+        ID2EFFECT_MAP.put(Spiritum.id("lemure_binding"),(world,pos,boundPlayers)->
             summon(world, pos, SpiritumEntities.LEMURE, boundPlayers));
-        ID2EFFECT_MAP.put("calling",(world,pos,boundPlayers)-> {
+        ID2EFFECT_MAP.put(Spiritum.id("calling"),(world,pos,boundPlayers)-> {
             if (!boundPlayers.isEmpty()) {
                 var player =
                     world.getServer()
@@ -106,7 +113,7 @@ public final class RitualEffects {
             OfferingRecipe rite,
             int elapsed,
             Set<UUID> boundPlayers) {
-        switch (rite.id()) {
+        switch (rite.id().getPath()) {
             case "warding" -> Warding.add(world, pos);
             case "vigilance" -> Vigilance.add(world, pos);
             case "dominion" -> Dominion.add(world, pos);
@@ -200,13 +207,13 @@ public final class RitualEffects {
     }
 
     public static void sigil(ServerWorld world, BlockPos pos, OfferingRecipe rite, int elapsed) {
-        var sprite = SpiritumParticles.sigil(rite.id());
+        var sprite = SpiritumParticles.sigil(rite.id().getPath());
         if (sprite != null)
             world.spawnParticles(
                     sprite, pos.getX() + .5, pos.getY() + 2.6, pos.getZ() + .5, 1, 0, 0, 0, 0);
         double angle = elapsed * .12;
         world.spawnParticles(
-                isHighRitual(rite.id()) ? SpiritumParticles.BIG_HEXFLAME : SpiritumParticles.HEXFLAME,
+                isHighRitual(rite.id().getPath()) ? SpiritumParticles.BIG_HEXFLAME : SpiritumParticles.HEXFLAME,
                 pos.getX() + .5 + Math.cos(angle) * .7,
                 pos.getY() + 1.75,
                 pos.getZ() + .5 + Math.sin(angle) * .7,

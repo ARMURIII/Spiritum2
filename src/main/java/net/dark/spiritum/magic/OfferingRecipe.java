@@ -1,12 +1,14 @@
 package net.dark.spiritum.magic;
 
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Range;
 
 import java.util.*;
 
 public record OfferingRecipe(
-    String id, int candles, Range<Integer> ownerCandles, boolean persistent, Map<Item, Integer> ingredients, ItemStack result) {
+    Identifier id, int candles, Range<Integer> ownerCandles, boolean persistent, Map<Item, Integer> ingredients, ItemStack result) {
 
     public ItemStack outputStack() {
         return result.copy();

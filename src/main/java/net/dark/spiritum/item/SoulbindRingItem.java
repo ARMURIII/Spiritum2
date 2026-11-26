@@ -1,9 +1,10 @@
 package net.dark.spiritum.item;
 
-import net.dark.spiritum.registry.SpiritumContent;
+import net.dark.spiritum.magic.RingBearer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
 public class SoulbindRingItem extends GemSocketItem {
@@ -18,15 +19,17 @@ public class SoulbindRingItem extends GemSocketItem {
 
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack ring = user.getStackInHand(hand);
+        /*ItemStack ring = user.getStackInHand(hand);
         ItemStack other =
                 user.getStackInHand(hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND);
         if (SpiritBinding.socket(ring).isEmpty()
                 && other.isOf(SpiritumContent.SPIRIT_GEM)
                 && SpiritBinding.player(other).isEmpty()) {
-
             return ActionResult.FAIL;
-        }
-        return super.use(world, user, hand);
+        }*/
+        if (super.use(world, user, hand).isAccepted());
+        else
+            user.setStackInHand(hand,((RingBearer) user).spiritum$swapRing(user.getStackInHand(hand)));
+        return ActionResult.SUCCESS;
     }
 }

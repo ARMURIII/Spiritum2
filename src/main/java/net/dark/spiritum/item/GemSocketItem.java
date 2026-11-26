@@ -6,13 +6,18 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.inventory.StackReference;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipData;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ClickType;
+import net.minecraft.util.Hand;
+import net.minecraft.world.World;
+
 import java.util.Optional;
 
 public class GemSocketItem extends Item {
@@ -23,6 +28,14 @@ public class GemSocketItem extends Item {
     protected boolean acceptsGem(ItemStack stack) { return stack.isOf(SpiritumContent.SPIRIT_GEM); }
 
     protected boolean canRemoveGem() { return true; }
+
+    protected SoundEvent placeSound() {
+        return SoundEvents.BLOCK_STONE_PLACE;
+    }
+
+    protected SoundEvent removeSound() {
+        return SoundEvents.BLOCK_STONE_BREAK;
+    }
 
     @Override
     public Optional<TooltipData> getTooltipData(ItemStack stack) {
@@ -36,14 +49,14 @@ public class GemSocketItem extends Item {
         if (click == ClickType.LEFT && gem.isEmpty() && acceptsGem(cursor)) {
             SpiritBinding.socket(holder, cursor);
             cursor.decrement(1);
-            player.playSound(SoundEvents.ITEM_BUNDLE_INSERT, .8f, 1);
+            player.playSound(placeSound(), .8f, 2);
             slot.markDirty();
             return true;
         }
         if (canRemoveGem() && click == ClickType.RIGHT && cursor.isEmpty() && !gem.isEmpty()) {
             cursorReference.set(gem);
             SpiritBinding.socket(holder, ItemStack.EMPTY);
-            player.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, .8f, 1);
+            player.playSound(removeSound(), .8f, 2);
             slot.markDirty();
             return true;
         }
@@ -57,13 +70,13 @@ public class GemSocketItem extends Item {
             ItemStack taken = slot.takeStackRange(1, 1, player);
             if (taken.isEmpty()) return false;
             SpiritBinding.socket(holder, taken);
-            player.playSound(SoundEvents.ITEM_BUNDLE_INSERT, .8f, 1);
+            player.playSound(placeSound(), .8f, 2);
             return true;
         }
         if (canRemoveGem() && click == ClickType.RIGHT && !gem.isEmpty() && slot.getStack().isEmpty() && slot.canInsert(gem)) {
             if (!slot.insertStack(gem.copy()).isEmpty()) return false;
             SpiritBinding.socket(holder, ItemStack.EMPTY);
-            player.playSound(SoundEvents.ITEM_BUNDLE_REMOVE_ONE, .8f, 1);
+            player.playSound(removeSound(), .8f, 2);
             return true;
         }
         return false;
@@ -113,7 +126,6 @@ public class GemSocketItem extends Item {
             SpiritBinding.socket(holder, other);
             InteractionEffects.atHand(user, true);
             if (!user.isCreative()) other.decrement(1);
-
         }
         return ActionResult.SUCCESS;
     }

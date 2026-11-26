@@ -16,16 +16,13 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /** Shared client/server lookup so mining progress agrees with server enforcement. */
 public final class Dominion {
     private static final Map<World, Set<BlockPos>> RITES = new WeakHashMap<>();
 
-    public static void add(World world, BlockPos pos) {
+    public static void add(World world, BlockPos pos, Set<UUID> ignored) {
         RITES.computeIfAbsent(world, w -> new HashSet<>()).add(pos.toImmutable());
     }
 

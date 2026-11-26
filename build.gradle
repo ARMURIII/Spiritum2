@@ -51,7 +51,7 @@ dependencies {
     modCompileOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}")
     modCompileOnly("net.caffeinemc:sodium-fabric:${project.sodium_version}") { transitive = false }
-    modCompileOnly("dev.emi:emi-fabric:1.1.24+1.21.1") { transitive = false }
+    modCompileOnly("dev.emi:emi-fabric:1.1.24+1.21.1") { transitive = false } // this is the outdated version, the fork I use for 1.21.11 doesn't have sources.
 
     if (project.findProperty('viewer') == 'jei') {
         modLocalRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }

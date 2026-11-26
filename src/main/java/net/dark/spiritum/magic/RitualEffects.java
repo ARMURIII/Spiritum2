@@ -22,6 +22,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.rule.GameRules;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.*;
@@ -34,6 +35,7 @@ public final class RitualEffects {
     }
 
     public static Map<Identifier, TriConsumer<ServerWorld,BlockPos,Set<UUID>>> ID2EFFECT_MAP = new HashMap<>();
+    public static Map<Identifier, Pair<Integer,TriConsumer<ServerWorld,BlockPos,Set<UUID>>>> ID2SUSTAIN_MAP = new HashMap<>();
 
     static {
         ID2EFFECT_MAP.put(Spiritum.id("rain"),(world, pos, players)->
@@ -83,6 +85,13 @@ public final class RitualEffects {
                 }
             }
         });
+
+        ID2SUSTAIN_MAP.put(Spiritum.id("warding"),Pair.of(1, Warding::add));
+        ID2SUSTAIN_MAP.put(Spiritum.id("vigilance"),Pair.of(1, Vigilance::add));
+        ID2SUSTAIN_MAP.put(Spiritum.id("dominion"),Pair.of(1, Dominion::add));
+        ID2SUSTAIN_MAP.put(Spiritum.id("libido"),Pair.of(1200, RitualEffects::breed));
+        ID2SUSTAIN_MAP.put(Spiritum.id("abundance"),Pair.of(1, RitualEffects::grow));
+        ID2SUSTAIN_MAP.put(Spiritum.id("withering"),Pair.of(20, RitualEffects::wither));
     }
 
     public static void trigger(
@@ -113,20 +122,9 @@ public final class RitualEffects {
             OfferingRecipe rite,
             int elapsed,
             Set<UUID> boundPlayers) {
-        switch (rite.id().getPath()) {
-            case "warding" -> Warding.add(world, pos);
-            case "vigilance" -> Vigilance.add(world, pos);
-            case "dominion" -> Dominion.add(world, pos);
-            case "libido" -> {
-                if (elapsed % 1200 == 0) breed(world, pos);
-            }
-            case "abundance" -> grow(world, pos);
-            case "withering" -> {
-                if (elapsed % 20 == 0) wither(world, pos, boundPlayers);
-            }
-            default ->
-                    throw new IllegalArgumentException("Unknown persistent ritual: " + rite.id());
-        }
+        var entry = ID2SUSTAIN_MAP.getOrDefault(rite.id(),Pair.of(0,(a,b,c)->{}));
+        if (entry.getKey() == 0) return;
+        if (entry.getKey() == 1 || elapsed % entry.getKey() == 0) entry.getValue().accept(world,pos,boundPlayers);
     }
 
     private static <T extends OwnedDemonEntity> void summon(
@@ -155,7 +153,7 @@ public final class RitualEffects {
         }
     }
 
-    private static void breed(ServerWorld world, BlockPos pos) {
+    private static void breed(ServerWorld world, BlockPos pos, Set<UUID> ignored) {
         List<AnimalEntity> animals =
                 new ArrayList<>(
                         world.getEntitiesByClass(
@@ -182,7 +180,7 @@ public final class RitualEffects {
             }
     }
 
-    private static void grow(ServerWorld world, BlockPos pos) {
+    private static void grow(ServerWorld world, BlockPos pos, Set<UUID> ignored) {
         // Vanilla random ticks sample each block randomTickSpeed / 4096 times per tick.
         // Add two independent passes for exactly 3x expected crop ticks (respecting the gamerule).
         int speed = world.getGameRules().getValue(GameRules.RANDOM_TICK_SPEED);
@@ -235,7 +233,7 @@ public final class RitualEffects {
     }
 
     public static boolean isHighRitual(String id) {
-        return id.endsWith("_binding") || id.equals("calling") || id.equals("withering") || id.equals("dominion");
+        return id.endsWith("_binding") || id.equals("calling") || id.equals("withering") || id.equals("dominion") || id.equals("vigilance");
     }
 
     private static void setTimeWithinCurrentDay(ServerWorld world, long time) {

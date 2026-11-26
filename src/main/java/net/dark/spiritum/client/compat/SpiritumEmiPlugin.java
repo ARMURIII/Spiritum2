@@ -6,33 +6,41 @@ import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.EmiInitRegistry;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
+import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.render.EmiRenderable;
 import dev.emi.emi.api.render.EmiTexture;
+import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiRegistryAdapter;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
+import dev.emi.emi.config.FluidUnit;
 import dev.emi.emi.runtime.EmiDrawContext;
 import net.dark.spiritum.Spiritum;
 import net.dark.spiritum.client.compat.emi.VatLiquidEmiStack;
 import net.dark.spiritum.magic.MagicRecipes;
 import net.dark.spiritum.magic.OfferingRecipe;
+import net.dark.spiritum.recipe.AlchemyRecipe;
 import net.dark.spiritum.registry.SpiritumContent;
 import net.dark.spiritum.registry.SpiritumRegistries;
 import net.dark.spiritum.vat.VatLiquid;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.render.state.ItemGuiElementRenderState;
+import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.render.item.KeyedItemRenderState;
 import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemDisplayContext;
+import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -53,7 +61,7 @@ public class SpiritumEmiPlugin implements EmiPlugin {
         = new EmiRecipeCategory(Spiritum.id("ritual"), EmiStack.of(SpiritumContent.RITUAL_PEDESTAL), simplifiedRenderer(190, 150));
 
     public static final EmiRecipeCategory ALCHEMY
-        = new EmiRecipeCategory(Spiritum.id("alchemy"), EmiStack.of(SpiritumContent.ALCHEMY_VAT), simplifiedRenderer(240, 120));
+        = new EmiRecipeCategory(Spiritum.id("alchemy"), EmiStack.of(SpiritumContent.ALCHEMY_VAT), simplifiedRenderer(170, 42));
 
     @Override
     public void initialize(EmiInitRegistry registry) {
@@ -76,11 +84,34 @@ public class SpiritumEmiPlugin implements EmiPlugin {
         registry.addCategory(RITUAL);
         registry.addCategory(ALCHEMY);
 
-        registry.addWorkstation(RITUAL, EmiIngredient.of(List.of(EmiStack.of(SpiritumContent.RITUAL_PEDESTAL),EmiStack.of(SpiritumContent.HEXED_CANDLE))));
+        registry.addWorkstation(RITUAL, EmiStack.of(SpiritumContent.RITUAL_PEDESTAL));
+        registry.addWorkstation(RITUAL, EmiStack.of(SpiritumContent.HEXED_CANDLE));
         registry.addWorkstation(ALCHEMY, EmiStack.of(SpiritumContent.ALCHEMY_VAT));
 
         for (OfferingRecipe ritual : MagicRecipes.RITUALS)
             registry.addRecipe(new OfferingEmiRecipe(ritual));
+
+        for (RecipeEntry<AlchemyRecipe> recipe : MinecraftClient.getInstance().world.getRecipeManager().getSynchronizedRecipes().getAllOfType(AlchemyRecipe.TYPE))
+            registry.addRecipe(new AlchemyEmiRecipe(recipe));
+
+        Comparison potionComparison = Comparison.compareData(stack -> stack.get(DataComponentTypes.POTION_CONTENTS));
+
+        registry.setDefaultComparison(SpiritumContent.ARGENT_NEEDLE, potionComparison);
+
+        EmiPort.getPotionRegistry().forEach(entry -> {
+            EmiStack needle = EmiStack.of(SpiritumContent.ARGENT_NEEDLE);
+            registry.addRecipe(new EmiCraftingRecipe(List.of(
+                needle,
+                EmiStack.of(EmiPort.setPotion(Items.POTION.getDefaultStack(), entry))
+            ),
+                EmiStack.of(EmiPort.setPotion(SpiritumContent.ARGENT_NEEDLE.getDefaultStack(), entry)),
+                synthetic("crafting/needle_coating", EmiUtil.subId(EmiPort.getPotionRegistry().getId(entry))),
+                true));
+        });
+    }
+
+    private static Identifier synthetic(String type, String name) {
+        return EmiPort.id("emi", "/" + type + "/" + name);
     }
 
 
@@ -167,7 +198,7 @@ public class SpiritumEmiPlugin implements EmiPlugin {
         @Override
         public void addWidgets(WidgetHolder widgets) {
             var font = MinecraftClient.getInstance().textRenderer;
-            widgets.addText(Text.translatable("ritual.spiritum." + id.getPath().replace("/","")),
+            widgets.addText(Text.translatable(id.toTranslationKey("ritual").replace("/","")),
                 2, 2, 0xffFFFFFF, true);
 
             for (int i = 0; i < input.size(); i++)
@@ -176,7 +207,7 @@ public class SpiritumEmiPlugin implements EmiPlugin {
             var length = 190-24;
 
             if (candles.size() == 1) {
-                widgets.addSlot(candles.getFirst(), 4, 46).catalyst(true).drawBack(false);
+                widgets.addSlot(candles.getFirst(), 4, 46).catalyst(id.getPath().endsWith("_binding")).drawBack(false);
                 widgets.add(new CandleWidget(1, 54));
             } else
                 for (int i = 0; i < candles.size(); i++) {
@@ -188,9 +219,9 @@ public class SpiritumEmiPlugin implements EmiPlugin {
                             r.nextInt(ownerRange.minInclusive(),ownerRange.maxInclusive()+1) > finalI-(candles.size()-ownerRange.maxInclusive()) ?
                                 candles.get(finalI) :
                                 EmiStack.EMPTY
-                        ,unique, x, 46).catalyst(true).drawBack(false);
+                        ,unique, x, 46).drawBack(false);
                     } else
-                        widgets.addSlot(candles.get(i), x, 46).catalyst(true).drawBack(false);
+                        widgets.addSlot(candles.get(i), x, 46).catalyst(id.getPath().endsWith("_binding")).drawBack(false);
                 }
 
             if (output.stream().noneMatch(EmiStack::isEmpty)) {
@@ -252,6 +283,76 @@ public class SpiritumEmiPlugin implements EmiPlugin {
             public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
                 drawCandle(this.x, this.y, context);
             }
+        }
+    }
+
+    public static class AlchemyEmiRecipe implements EmiRecipe {
+        private final Identifier id;
+        private final int time;
+        private final List<EmiIngredient> input;
+        private final List<EmiStack> output;
+        private final List<EmiStack> liquids;
+
+        public AlchemyEmiRecipe(RecipeEntry<AlchemyRecipe> recipe) {
+            this.id = recipe.id().getValue();
+            this.time = recipe.value().duration();
+            this.input = recipe.value().ingredients().entrySet().stream()
+                .map(entry -> EmiIngredient.of(Ingredient.ofItem(entry.getKey()),entry.getValue()))
+                .toList();
+
+            this.output = List.of(EmiStack.of(recipe.value().result()));
+
+            this.liquids = List.of(
+                recipe.value().fluid() instanceof VatLiquid vatLiquid ?
+                new VatLiquidEmiStack(vatLiquid,ComponentChanges.EMPTY,FluidUnit.BUCKET) :
+                EmiStack.of(recipe.value().fluid(), FluidUnit.BUCKET)
+            );
+        }
+
+        @Override
+        public EmiRecipeCategory getCategory() {
+            return ALCHEMY;
+        }
+
+        @Override
+        public Identifier getId() {
+            return id;
+        }
+
+        @Override
+        public List<EmiIngredient> getInputs() {
+            var inputs = new ArrayList<>(input);
+            inputs.addAll(liquids);
+            return inputs;
+        }
+
+        @Override
+        public List<EmiStack> getOutputs() {
+            return output;
+        }
+
+        @Override
+        public int getDisplayWidth() {
+            return 170;
+        }
+
+        @Override
+        public int getDisplayHeight() {
+            return 42;
+        }
+
+        @Override
+        public void addWidgets(WidgetHolder widgets) {
+            for (int i = 0; i < input.size(); i++)
+                widgets.addSlot(input.get(i), 4 + (i % 4) * 24, 0).drawBack(false);
+
+            for (int i = 0; i < liquids.size(); i++)
+                widgets.addSlot(liquids.get(i), 4 + (i % 4) * 24, 24).drawBack(false);
+
+            widgets.addFillingArrow(100,12,50 * time).tooltip((mx, my) ->
+                List.of(TooltipComponent.of(EmiPort.ordered(EmiPort.translatable("emi.cooking.time", time / 20f))))
+            );
+            widgets.addSlot(output.getFirst(), 140, 8).large(true).recipeContext(this);
         }
     }
 }

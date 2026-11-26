@@ -1,8 +1,12 @@
 package net.dark.spiritum.registry;
 
 import net.dark.spiritum.Spiritum;
-import net.dark.spiritum.block.*;
-import net.dark.spiritum.block.entity.*;
+import net.dark.spiritum.block.AlchemyVatBlock;
+import net.dark.spiritum.block.HexedCandleBlock;
+import net.dark.spiritum.block.PedestalBlock;
+import net.dark.spiritum.block.entity.CandleBlockEntity;
+import net.dark.spiritum.block.entity.PedestalBlockEntity;
+import net.dark.spiritum.block.entity.VatBlockEntity;
 import net.dark.spiritum.item.*;
 import net.dark.spiritum.recipe.NeedleCoatingRecipe;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -10,12 +14,20 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.*;
-import net.minecraft.registry.*;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.SmithingTemplateItem;
+import net.minecraft.potion.Potion;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -229,12 +241,13 @@ public final class SpiritumContent {
                             .fireproof());
     public static final Item BOTTLE_OF_HADES =
             custom("bottle_of_hades", BottleOfHadesItem::new, new Item.Settings().maxCount(1));
+
     public static final Item SUMMONERS_RING =
-            custom("summoners_ring", Item::new, new Item.Settings().maxCount(1));
+            custom("summoners_ring", RingItem::new, new Item.Settings().maxCount(1));
     public static final Item SOULBIND_RING =
             custom("soulbind_ring", SoulbindRingItem::new, new Item.Settings().maxCount(1));
     public static final Item WARDING_RING =
-            custom("warding_ring", Item::new, new Item.Settings().maxCount(1));
+            custom("warding_ring", RingItem::new, new Item.Settings().maxCount(1));
 
     private static Item hexblade() {
         var key = RegistryKey.of(RegistryKeys.ITEM, id("hexblade"));
@@ -270,54 +283,72 @@ public final class SpiritumContent {
 
     public static void initialize() {
         NeedleCoatingRecipe.initialize();
+
         Registry.register(
-                Registries.ITEM_GROUP,
-                id("spiritum"),
-                FabricItemGroup.builder()
-                        .displayName(Text.translatable("itemGroup.spiritum"))
-                        .icon(() -> new ItemStack(SPIRIT_GEM))
-                        .entries((context, entries) -> {
-                            entries.add(HEXSTONE);
-                            entries.add(HEXSTONE_STAIRS);
-                            entries.add(HEXSTONE_SLAB);
-                            entries.add(HEXSTONE_WALL);
-                            entries.add(POLISHED_HEXSTONE);
-                            entries.add(POLISHED_HEXSTONE_STAIRS);
-                            entries.add(POLISHED_HEXSTONE_SLAB);
-                            entries.add(POLISHED_HEXSTONE_WALL);
-                            entries.add(HEXSTONE_BRICKS);
-                            entries.add(HEXSTONE_BRICK_STAIRS);
-                            entries.add(HEXSTONE_BRICK_SLAB);
-                            entries.add(HEXSTONE_BRICK_WALL);
-                            entries.add(HEXED_CANDLE);
-                            entries.add(RITUAL_PEDESTAL);
-                            entries.add(SPIRIT_FRAGMENT);
-                            entries.add(SPIRIT_GEM);
-                            entries.add(HEX_ASH);
-                            entries.add(ItemStack.EMPTY.copyWithCount(1));
-                            entries.add(ARGENT_BLOCK);
-                            entries.add(ARGENT_INGOT);
-                            entries.add(ARGENT_NUGGET);
-                            entries.add(ALCHEMY_VAT);
-                            entries.add(HEXBLADE);
-                            entries.add(SENTINEL);
-                            entries.add(ARGENT_NEEDLE);
-                            entries.add(LIVING_FLESH);
-                            entries.add(VOODOO_POPPET);
-                            entries.add(CALX_OF_HADES);
-                            entries.add(BOTTLE_OF_HADES);
-                            entries.add(TUNED_BLADE);
-                            if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-                                entries.add(EXALTED_INGOT);
-                                entries.add(RETROSONUS_UPGRADE_TEMPLATE);
-                                entries.add(RETROSONUS);
-                            }
-                            entries.add(WARDING_RING);
-                            entries.add(SOULBIND_RING);
-                            entries.add(SUMMONERS_RING);
-                            }
-                        )
-                        .build());
+            Registries.ITEM_GROUP,
+            id("spiritum"),
+            FabricItemGroup.builder()
+                .displayName(Text.translatable("itemGroup.spiritum"))
+                .icon(SPIRIT_GEM::getDefaultStack)
+                .entries((context, entries) -> {
+                    entries.add(HEXSTONE);
+                    entries.add(HEXSTONE_STAIRS);
+                    entries.add(HEXSTONE_SLAB);
+                    entries.add(HEXSTONE_WALL);
+                    entries.add(POLISHED_HEXSTONE);
+                    entries.add(POLISHED_HEXSTONE_STAIRS);
+                    entries.add(POLISHED_HEXSTONE_SLAB);
+                    entries.add(POLISHED_HEXSTONE_WALL);
+                    entries.add(HEXSTONE_BRICKS);
+                    entries.add(HEXSTONE_BRICK_STAIRS);
+                    entries.add(HEXSTONE_BRICK_SLAB);
+                    entries.add(HEXSTONE_BRICK_WALL);
+                    entries.add(HEXED_CANDLE);
+                    entries.add(RITUAL_PEDESTAL);
+                    entries.add(SPIRIT_FRAGMENT);
+                    entries.add(SPIRIT_GEM);
+                    entries.add(HEX_ASH);
+                    entries.add(SOULBIND_RING);
+                    entries.add(ARGENT_BLOCK);
+                    entries.add(ARGENT_INGOT);
+                    entries.add(ARGENT_NUGGET);
+                    entries.add(ALCHEMY_VAT);
+                    entries.add(SENTINEL);
+                    entries.add(HEXBLADE);
+                    entries.add(WARDING_RING);
+                    entries.add(LIVING_FLESH);
+                    entries.add(VOODOO_POPPET);
+                    entries.add(CALX_OF_HADES);
+                    entries.add(BOTTLE_OF_HADES);
+                    entries.add(TUNED_BLADE);
+                    entries.add(SUMMONERS_RING);
+                    if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                        entries.add(EXALTED_INGOT);
+                        entries.add(RETROSONUS_UPGRADE_TEMPLATE);
+                        entries.add(RETROSONUS);
+                    }
+                }
+            ).build()
+        );
+        Registry.register(
+            Registries.ITEM_GROUP,
+            id("spiritum_needles"),
+            FabricItemGroup.builder()
+                .displayName(Text.translatable("itemGroup.needles"))
+                .icon(ARGENT_NEEDLE::getDefaultStack)
+                .entries((context, entries) -> {
+                    entries.add(ARGENT_NEEDLE);
+                       for (Potion potion : Registries.POTION) {
+                           var needle = ARGENT_NEEDLE.getDefaultStack();
+                           needle.set(
+                               DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT.with(Registries.POTION.getEntry(potion))
+                           );
+                           needle.set(DataComponentTypes.POTION_DURATION_SCALE, .25f);
+                           entries.add(needle);
+                       }
+                }
+            ).build()
+        );
     }
 
     private static Item custom(

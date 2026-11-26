@@ -2,20 +2,26 @@ package net.dark.spiritum.block.entity;
 
 import net.dark.spiritum.block.HexedCandleBlock;
 import net.dark.spiritum.magic.InteractionEffects;
+import net.dark.spiritum.magic.RitualEffects;
 import net.dark.spiritum.registry.SpiritumContent;
 import net.dark.spiritum.registry.SpiritumParticles;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
-import net.minecraft.entity.effect.*;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.*;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Uuids;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.UUID;
@@ -105,7 +111,7 @@ public class CandleBlockEntity extends BlockEntity {
         if (flame == 3 && world.getTime() % 20 == 0) candle.markDirty();
         boolean highRitual = candle.ritualOwner != null
                 && world.getBlockEntity(candle.ritualOwner) instanceof PedestalBlockEntity pedestal
-                && net.dark.spiritum.magic.RitualEffects.isHighRitual(pedestal.getActiveRitual());
+                && RitualEffects.isHighRitual(pedestal.getActiveRitual());
 
         if (world.getTime() % 5 == 0 && world instanceof ServerWorld server)
             server.spawnParticles(

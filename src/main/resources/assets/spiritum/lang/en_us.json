@@ -22,6 +22,7 @@
   "item.spiritum.tuned_blade": "Tuning Blade",
 
   "itemGroup.spiritum": "Spiritum",
+  "itemGroup.needles": "Spiritum Needles",
 
   "message.spiritum.resonance_shape": "Place four rods around an open area to form a barrier.",
   "message.spiritum.ritual_busy": "The pedestal is channeling. Snuff a ritual candle to interrupt it.",
@@ -150,7 +151,7 @@
   "viewer.spiritum.effect.dominion": "Unbound players mine blocks like obsidian and cannot use storage within 50 blocks.",
 
   "emi.category.spiritum.ritual": "Spirit Rituals",
-  "emi.category.spiritum.alchemy": "Spirit Rituals",
+  "emi.category.spiritum.alchemy": "Spirit Alchemy",
 
   "viewer.spiritum.rituals": "Spirit Rituals",
   "viewer.spiritum.alchemy": "Spirit Alchemy",

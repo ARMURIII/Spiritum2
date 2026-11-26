@@ -25,7 +25,8 @@ public class Spiritum implements ModInitializer {
         PayloadTypeRegistry.playS2C()
                 .register(
                         net.dark.spiritum.network.TunedBladeTargetPayload.ID,
-                        net.dark.spiritum.network.TunedBladeTargetPayload.CODEC);
+                        net.dark.spiritum.network.TunedBladeTargetPayload.CODEC
+                );
 
         SpiritumRegistryKeys.initialize();
         SpiritumRegistries.initialize();

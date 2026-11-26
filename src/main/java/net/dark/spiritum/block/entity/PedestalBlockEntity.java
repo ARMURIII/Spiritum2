@@ -143,11 +143,8 @@ public class PedestalBlockEntity extends OfferingBlockEntity {
 
     public static void tick(
         World world, BlockPos pos, @SuppressWarnings("unused") BlockState state, PedestalBlockEntity pedestal) {
-        if (world.isClient()) {
-            if (pedestal.isSustained() && pedestal.activeRitual.equals("dominion")) Dominion.add(world, pos);
-            else Dominion.remove(world, pos);
+        if (world.isClient())
             return;
-        }
         ServerWorld server = (ServerWorld) world;
         if (pedestal.activeRitual.isEmpty()) {
             if (world.getTime() % 10 != 0 || pedestal.offerings.isEmpty()) return;

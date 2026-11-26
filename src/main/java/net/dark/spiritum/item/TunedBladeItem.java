@@ -9,7 +9,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.*;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -21,6 +24,16 @@ public class TunedBladeItem extends GemSocketItem {
     @Override
     protected boolean acceptsGem(ItemStack stack) {
         return super.acceptsGem(stack) && SpiritBinding.player(stack).isPresent();
+    }
+
+    @Override
+    protected SoundEvent placeSound() {
+        return SoundEvents.BLOCK_IRON_PLACE;
+    }
+
+    @Override
+    protected SoundEvent removeSound() {
+        return SoundEvents.BLOCK_IRON_BREAK;
     }
 
     @Override

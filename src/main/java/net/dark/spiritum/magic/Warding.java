@@ -7,7 +7,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -16,7 +17,7 @@ import java.util.*;
 public final class Warding {
     private static final Map<World, Set<BlockPos>> WARDS = new WeakHashMap<>();
 
-    public static void add(World world, BlockPos pos) {
+    public static void add(World world, BlockPos pos, Set<UUID> ignored) {
         WARDS.computeIfAbsent(world, w -> new HashSet<>()).add(pos.toImmutable());
     }
 

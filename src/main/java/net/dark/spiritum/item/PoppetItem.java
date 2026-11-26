@@ -8,6 +8,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -19,6 +21,11 @@ public class PoppetItem extends GemSocketItem {
         if (SpiritBinding.socket(stack).isEmpty()) return super.use(world, user, hand);
         user.setCurrentHand(hand);
         return ActionResult.CONSUME;
+    }
+
+    @Override
+    protected SoundEvent placeSound() {
+        return SoundEvents.ITEM_BUNDLE_INSERT_FAIL;
     }
 
     @Override

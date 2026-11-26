@@ -4,14 +4,13 @@
   "version": "${version}",
   "name": "Spiritum",
   "description": "The art of manipulation and usage of spirit.",
-  "authors": ["dark"],
+  "authors": ["dark","ARR","eyalego"],
   "contact": {},
   "license": "All-Rights-Reserved",
   "environment": "*",
   "mixins": ["spiritum.mixins.json"],
   "entrypoints": {
     "jei_mod_plugin": ["net.dark.spiritum.client.compat.SpiritumJeiPlugin"],
-    "rei_client": ["net.dark.spiritum.client.compat.SpiritumReiPlugin"],
     "emi": ["net.dark.spiritum.client.compat.SpiritumEmiPlugin"],
     "client": [
       "net.dark.spiritum.client.SpiritumClient"
